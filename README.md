@@ -1,3 +1,7 @@
+原github链接：https://github.com/geekjourneyx/ai-daily-skill/blob/main/.env.example
+
+本例修改为K2模型，用qq邮箱
+
 # AI Daily Skill
 
 > AI 资讯日报 Claude Code Skill - 每天自动获取、分析、归类 AI 前沿资讯
