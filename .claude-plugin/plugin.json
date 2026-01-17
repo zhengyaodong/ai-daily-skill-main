@@ -1,0 +1,15 @@
+{
+  "name": "ai-daily",
+  "description": "AI news aggregator that fetches AI industry news from smol.ai RSS and generates structured markdown with intelligent summarization and categorization. Optionally creates beautiful HTML webpages with Apple-style themes.",
+  "version": "1.0.0",
+  "author": {
+    "name": "geekjourney",
+    "email": "skrphper@gmail.com"
+  },
+  "homepage": "https://github.com/geekjourneyx/ai-daily-skill",
+  "repository": "https://github.com/geekjourneyx/ai-daily-skill",
+  "license": "MIT",
+  "keywords": ["ai", "news", "daily", "tech", "markdown", "rss", "smol.ai"],
+  "skills": ["plugins/ai-daily/skills/ai-daily"],
+  "strict": false
+}

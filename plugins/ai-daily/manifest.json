@@ -1,0 +1,30 @@
+{
+  "name": "ai-daily",
+  "version": "1.0.0",
+  "description": "AI news aggregator that fetches AI industry news from smol.ai RSS and generates structured markdown",
+  "repository": "geekjourneyx/ai-daily-skill",
+  "requires": {
+    "packages": [
+      {
+        "name": "feedparser",
+        "optional": false,
+        "purpose": "Parse RSS feed from smol.ai",
+        "install": "pip install feedparser"
+      },
+      {
+        "name": "requests",
+        "optional": false,
+        "purpose": "HTTP client for fetching RSS",
+        "install": "pip install requests"
+      }
+    ],
+    "apis": [
+      {
+        "name": "smol.ai RSS",
+        "optional": false,
+        "purpose": "AI news data source",
+        "url": "https://news.smol.ai/rss.xml"
+      }
+    ]
+  }
+}

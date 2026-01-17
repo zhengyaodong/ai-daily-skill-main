@@ -1,0 +1,13 @@
+# AI Daily 依赖清单
+
+# Claude API SDK
+anthropic>=0.40.0
+
+# RSS 解析
+feedparser>=6.0.10
+
+# HTTP 请求
+requests>=2.31.0
+
+# 日期处理
+python-dateutil>=2.8.2
