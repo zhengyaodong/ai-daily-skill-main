@@ -273,37 +273,3 @@ python plugins/ai-daily/skills/ai-daily/scripts/fetch_news.py --date 2026-01-13
 # 获取昨天的内容
 python plugins/ai-daily/skills/ai-daily/scripts/fetch_news.py --relative yesterday
 ```
-
----
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-## 开源协议
-
-MIT License
-
----
-
-## 💰 打赏 Buy Me A Coffee
-
-如果该项目帮助了您，请作者喝杯咖啡吧 ☕️
-
-### WeChat
-
-<img src="https://raw.githubusercontent.com/geekjourneyx/awesome-developer-go-sail/main/docs/assets/wechat-reward-code.jpg" alt="微信打赏码" width="200" />
-
-## 🧑‍💻 作者
-- 作者：`geekjourneyx`
-- X（Twitter）：https://x.com/seekjourney
-- 公众号：极客杰尼
-
-关注公众号，获取更多 AI 编程、AI 工具与 AI 出海建站的实战分享：
-
-<p>
-<img src="https://raw.githubusercontent.com/geekjourneyx/awesome-developer-go-sail/main/docs/assets/qrcode.jpg" alt="公众号：极客杰尼" width="180" />
-</p>
-
