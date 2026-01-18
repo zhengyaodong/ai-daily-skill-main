@@ -21,7 +21,7 @@ env:
 on:
   # 每天 UTC 02:00 执行 = 北京时间 10:00
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 1 * * *'
 
   # 允许手动触发
   workflow_dispatch:
