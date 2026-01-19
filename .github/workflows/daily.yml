@@ -19,9 +19,9 @@ env:
     DISABLE_EMAIL_NOTIFICATION: ${{ secrets.DISABLE_EMAIL_NOTIFICATION || 'false' }}
 
 on:
-  # 每天 UTC 02:00 执行 = 北京时间 10:00
+  # 每天 UTC 01:13 执行 = 北京时间 09:13 避免整点时大量排队
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '13 1 * * *'
 
   # 允许手动触发
   workflow_dispatch:
