@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Daily · 2026年1月16日 星期五</title>
     <meta name="description" content="每日 AI 前沿资讯，智能分类，快速掌握核心动态">
-    <meta name="keywords" content="OpenAI, ChatGPT Go, GPT-5.2, 广告, Sam Altman, Codex, FLUX.2, VoxCPM, 多向量检索, 推理爆炸, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
+    <meta name="keywords" content="OpenAI, ChatGPT Go, Codex, 广告, GPT-5.2, memory, Ollama, multi-vector retrieval, FLUX.2, VoxCPM, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body data-theme="indigo">
+<body data-theme="blue">
     <div class="background-glow"></div>
     <div class="geometric-lines"></div>
 
@@ -24,41 +24,12 @@
             <section class="summary-card">
                 <h2 class="section-title">📌 今日核心摘要</h2>
                 <ul class="summary-list">
-                <li class="summary-item">OpenAI在美上线8美元/月Go套餐并测试免费版广告</li>
-                <li class="summary-item">ChatGPT Go含GPT-5.2 instant、长记忆与10倍消息额度</li>
-                <li class="summary-item">OpenAI承诺广告不干扰回答且付费用户无广告</li>
+                <li class="summary-item">OpenAI 在美测试免费/Go 层广告，承诺答案不受广告影响</li>
+                <li class="summary-item">ChatGPT Go 版 $8/月上线，含 GPT-5.2 instant 无限用</li>
+                <li class="summary-item">Codex 极速版与记忆升级将至，CLI 已支持开源模型</li>
                 </ul>
             </section>
 
-
-            <section class="category-section">
-                <div class="category-header">
-                    <span class="category-icon">💼</span>
-                    <h2 class="category-title">产品动态</h2>
-                    <span class="category-count">2</span>
-                </div>
-                <div class="news-grid">
-
-                <article class="news-card">
-                    <div class="news-card-header">
-                        <h3 class="news-title">ChatGPT Go套餐上线美国</h3>
-                        <a href="https://twitter.com/OpenAI/status/2012223323812270219" class="item-link" target="_blank" rel="noopener">详情</a>
-                    </div>
-                    <p class="news-summary">$8/月享GPT-5.2 instant、长记忆与10倍额度</p>
-                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#ChatGPT Go</span> <span class="tag">#订阅</span></div>
-                </article>
-
-                <article class="news-card">
-                    <div class="news-card-header">
-                        <h3 class="news-title">免费与Go层开始测试广告</h3>
-                        <a href="https://twitter.com/OpenAI/status/2012223373489614951" class="item-link" target="_blank" rel="noopener">详情</a>
-                    </div>
-                    <p class="news-summary">OpenAI承诺广告不干扰回答、对话隐私隔离</p>
-                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#广告</span> <span class="tag">#免费层</span></div>
-                </article>
-
-                </div>
-            </section>
 
             <section class="category-section">
                 <div class="category-header">
@@ -70,29 +41,87 @@
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">FLUX.2 [klein] 4B开源</h3>
-                        <a href="https://twitter.com/vllm_project/status/2012110024294965406" class="item-link" target="_blank" rel="noopener">详情</a>
+                        <h3 class="news-title">FLUX.2 [klein] 4B 开源</h3>
+                        
                     </div>
-                    <p class="news-summary">Apache-2.0许可，vLLM零日支持，<13GB显存秒级推理</p>
+                    <p class="news-summary">Apache-2.0 权重，<13GB 显存可跑，登顶开源图生图榜</p>
                     <div class="item-tags"><span class="tag">#FLUX.2</span> <span class="tag">#Black Forest Labs</span> <span class="tag">#文生图</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">VoxCPM实时语音克隆</h3>
-                        <a href="https://twitter.com/LiorOnAI/status/2012133013967044755" class="item-link" target="_blank" rel="noopener">详情</a>
+                        <h3 class="news-title">VoxCPM 实时语音克隆</h3>
+                        
                     </div>
-                    <p class="news-summary">无token化连续语音，单4090达0.15实时因子</p>
-                    <div class="item-tags"><span class="tag">#VoxCPM</span> <span class="tag">#TTS</span> <span class="tag">#OpenBMB</span></div>
+                    <p class="news-summary">无 token 化流式 TTS，单 4090 0.15 倍实时，开源权重</p>
+                    <div class="item-tags"><span class="tag">#VoxCPM</span> <span class="tag">#OpenBMB</span> <span class="tag">#TTS</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Falcon-H1-Tiny<100M发布</h3>
-                        <a href="https://twitter.com/TIIuae/status/2012034581084430662" class="item-link" target="_blank" rel="noopener">详情</a>
+                        <h3 class="news-title">Falcon-H1-Tiny <100M</h3>
+                        
                     </div>
-                    <p class="news-summary">支持推理/代码/函数调用，面向边缘IoT部署</p>
-                    <div class="item-tags"><span class="tag">#Falcon</span> <span class="tag">#TII</span> <span class="tag">#小模型</span></div>
+                    <p class="news-summary">TII 发布超小模型，支持推理/代码/函数调用，面向边缘 IoT</p>
+                    <div class="item-tags"><span class="tag">#Falcon-H1-Tiny</span> <span class="tag">#TII</span> <span class="tag">#边缘AI</span></div>
+                </article>
+
+                </div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <span class="category-icon">💼</span>
+                    <h2 class="category-title">产品动态</h2>
+                    <span class="category-count">2</span>
+                </div>
+                <div class="news-grid">
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">ChatGPT Go 计划上线</h3>
+                        <a href="https://twitter.com/OpenAI/status/2012223323812270219" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">$8/月美区首发，10 倍消息量、文件上传、GPT-5.2 无限用</p>
+                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#ChatGPT Go</span> <span class="tag">#订阅</span></div>
+                </article>
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">免费与 Go 层开始测试广告</h3>
+                        <a href="https://twitter.com/OpenAI/status/2012223373489614951" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">OpenAI 承诺广告不干扰回答、对话隐私隔离，付费层无广告</p>
+                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#广告</span> <span class="tag">#免费层</span></div>
+                </article>
+
+                </div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <span class="category-icon">📚</span>
+                    <h2 class="category-title">研究论文</h2>
+                    <span class="category-count">2</span>
+                </div>
+                <div class="news-grid">
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">多向量检索重兴</h3>
+                        
+                    </div>
+                    <p class="news-summary">32M 参数多向量模型逼近 8B 性能，ColBERT/ColPali 被多次验证</p>
+                    <div class="item-tags"><span class="tag">#multi-vector retrieval</span> <span class="tag">#ColBERT</span></div>
+                </article>
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">AIR 偏好数据框架</h3>
+                        
+                    </div>
+                    <p class="news-summary">OpenBMB 提出注释-指令-回答三元组，14k 精选对提升 5.3 分</p>
+                    <div class="item-tags"><span class="tag">#AIR</span> <span class="tag">#OpenBMB</span> <span class="tag">#对齐</span></div>
                 </article>
 
                 </div>
@@ -108,20 +137,20 @@
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Codex CLI开放oss本地调用</h3>
+                        <h3 class="news-title">Codex CLI 支持开源模型</h3>
                         <a href="https://twitter.com/ollama/status/2012046176267440177" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">Ollama支持32K上下文，实验中途无中断转向</p>
-                    <div class="item-tags"><span class="tag">#Codex CLI</span> <span class="tag">#Ollama</span> <span class="tag">#本地推理</span></div>
+                    <p class="news-summary">ollama 集成 codex --oss，≥32K 上下文设置，可中途无中断纠偏</p>
+                    <div class="item-tags"><span class="tag">#Codex CLI</span> <span class="tag">#Ollama</span> <span class="tag">#本地模型</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">sled开源移动端Agent UI</h3>
-                        <a href="https://twitter.com/dctanner/status/2012212217677070796" class="item-link" target="_blank" rel="noopener">详情</a>
+                        <h3 class="news-title">Agent 控制协议 UI sled</h3>
+                        
                     </div>
-                    <p class="news-summary">通过ACP把Claude Code/Codex流式投到手机</p>
-                    <div class="item-tags"><span class="tag">#sled</span> <span class="tag">#Agent UI</span> <span class="tag">#ACP</span></div>
+                    <p class="news-summary">开源工具把手机变 Claude/Codex 遥控器，跨设备无缝接力</p>
+                    <div class="item-tags"><span class="tag">#sled</span> <span class="tag">#Agent Control Protocol</span></div>
                 </article>
 
                 </div>
@@ -129,7 +158,7 @@
 
 
         <footer class="keywords-footer">
-            <p>#关键词: OpenAI | ChatGPT Go | GPT-5.2 | 广告 | Sam Altman | Codex | FLUX.2 | VoxCPM | 多向量检索 | 推理爆炸</p>
+            <p>#关键词: OpenAI | ChatGPT Go | Codex | 广告 | GPT-5.2 | memory | Ollama | multi-vector retrieval | FLUX.2 | VoxCPM</p>
         </footer>
 
         </main>
