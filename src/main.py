@@ -95,6 +95,14 @@ def main():
         content = fetcher.get_content_by_date(target_date, rss_data)
 
         if not content:
+            print(f"目标日期 {target_date} 无内容，尝试获取 RSS 中的最新资讯...")
+            latest_date = fetcher.get_latest_date(rss_data)
+            if latest_date:
+                print(f"切换到最新可用日期: {latest_date}")
+                target_date = latest_date
+                content = fetcher.get_content_by_date(target_date, rss_data)
+
+        if not content:
             print("   目标日期无内容，生成空页面")
             if email_enabled:
                 notifier.send_empty(
