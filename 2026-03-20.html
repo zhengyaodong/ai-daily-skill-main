@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Daily · 2026年3月20日 星期五</title>
     <meta name="description" content="每日 AI 前沿资讯，智能分类，快速掌握核心动态">
-    <meta name="keywords" content="Cursor, Kimi K2.5, NVIDIA Nemotron-Cascade 2, megadocs, Claude Code, LangChain, Hermes, V-JEPA 2.1, Fireworks, RL, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
+    <meta name="keywords" content="Cursor, Kimi K2.5, NVIDIA Nemotron-Cascade 2, Claude Code, LangChain, V-JEPA 2.1, Mistral Small 4, RL 训练, 文档解析, 本地代理, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-theme="blue">
@@ -24,9 +24,9 @@
             <section class="summary-card">
                 <h2 class="section-title">📌 今日核心摘要</h2>
                 <ul class="summary-list">
-                <li class="summary-item">Cursor Composer 2 被曝基于 Kimi K2.5，归因争议引爆社区</li>
-                <li class="summary-item">NVIDIA 开源 30B-MoE 推理模型 Nemotron-Cascade 2，号称奥赛金牌级</li>
-                <li class="summary-item">斯坦福提出‘megadocs’预训练法，数据效率提升 1.8 倍</li>
+                <li class="summary-item">Cursor Composer 2 被曝基于 Kimi K2.5，引发开源归属争议</li>
+                <li class="summary-item">NVIDIA 开源 30B MoE 模型 Nemotron-Cascade 2，号称奥赛金牌级推理</li>
+                <li class="summary-item">Claude Code 生态扩张至 Telegram/Discord，第三方集成加速</li>
                 </ul>
             </section>
 
@@ -44,8 +44,8 @@
                         <h3 class="news-title">NVIDIA Nemotron-Cascade 2 开源</h3>
                         <a href="https://x.com/_weiping/status/2034877099908243746" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">30B-MoE/3B 激活，宣称 IMO/IOI/ICPC 金牌级推理性能</p>
-                    <div class="item-tags"><span class="tag">#NVIDIA</span> <span class="tag">#Nemotron-Cascade 2</span> <span class="tag">#MoE</span> <span class="tag">#推理</span></div>
+                    <p class="news-summary">30B MoE 仅 3B 激活，宣称 IMO/IOI/ICPC 金牌级推理性能</p>
+                    <div class="item-tags"><span class="tag">#NVIDIA</span> <span class="tag">#Nemotron-Cascade 2</span> <span class="tag">#MoE</span> <span class="tag">#推理模型</span></div>
                 </article>
 
                 <article class="news-card">
@@ -53,8 +53,8 @@
                         <h3 class="news-title">Mistral Small 4 登场</h3>
                         <a href="https://x.com/ArtificialAnlys/status/2034960206736892365" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">119B-MoE/6.5B 激活，支持推理+多模态，AA 指数 27</p>
-                    <div class="item-tags"><span class="tag">#Mistral</span> <span class="tag">#Small 4</span> <span class="tag">#Apache2.0</span></div>
+                    <p class="news-summary">119B MoE 6.5B 激活，支持混合推理与多模态，AA 指数 27</p>
+                    <div class="item-tags"><span class="tag">#Mistral</span> <span class="tag">#Small 4</span> <span class="tag">#Apache2.0</span> <span class="tag">#多模态</span></div>
                 </article>
 
                 <article class="news-card">
@@ -62,8 +62,8 @@
                         <h3 class="news-title">V-JEPA 2.1 视觉自监督升级</h3>
                         <a href="https://x.com/TheTuringPost/status/2034795966931640533" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary"> masked+visible 双监督，机器人抓取成功率再涨 20%</p>
-                    <div class="item-tags"><span class="tag">#FAIR</span> <span class="tag">#V-JEPA</span> <span class="tag">#视觉SSL</span></div>
+                    <p class="news-summary">FAIR 发布密集预测模型，机器人抓取成功率提升 20%</p>
+                    <div class="item-tags"><span class="tag">#FAIR</span> <span class="tag">#V-JEPA 2.1</span> <span class="tag">#自监督</span> <span class="tag">#机器人</span></div>
                 </article>
 
                 </div>
@@ -73,26 +73,35 @@
                 <div class="category-header">
                     <span class="category-icon">💼</span>
                     <h2 class="category-title">产品动态</h2>
-                    <span class="category-count">2</span>
+                    <span class="category-count">3</span>
                 </div>
                 <div class="news-grid">
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Cursor Composer 2 承认基于 Kimi K2.5</h3>
+                        <h3 class="news-title">Cursor Composer 2 归属争议</h3>
                         <a href="https://x.com/leerob/status/2035035355364081694" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">仅 1/4 算力来自基座，其余为 CPT+RL，Fireworks 托管</p>
-                    <div class="item-tags"><span class="tag">#Cursor</span> <span class="tag">#Kimi</span> <span class="tag">#Fireworks</span> <span class="tag">#归因争议</span></div>
+                    <p class="news-summary">承认基于 Kimi K2.5 后训练，1/4 算力来自基座，Fireworks 托管</p>
+                    <div class="item-tags"><span class="tag">#Cursor</span> <span class="tag">#Kimi</span> <span class="tag">#Fireworks</span> <span class="tag">#归属争议</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Claude Code 生态外溢</h3>
+                        <h3 class="news-title">Claude Code 生态扩张</h3>
                         <a href="https://x.com/theo/status/2034831968463200359" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">T3 Code 集成 CLI，Telegram/Discord 渠道版悄然测试</p>
-                    <div class="item-tags"><span class="tag">#Anthropic</span> <span class="tag">#Claude Code</span> <span class="tag">#T3 Code</span></div>
+                    <p class="news-summary">集成至 T3 Code 并计划登陆 Telegram/Discord 频道</p>
+                    <div class="item-tags"><span class="tag">#Claude Code</span> <span class="tag">#Anthropic</span> <span class="tag">#T3 Code</span></div>
+                </article>
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">LlamaIndex LiteParse 免费本地文档解析</h3>
+                        <a href="https://x.com/jerryjliu0/status/2034790590572060848" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">一行命令接入 40+ 代理，文档理解能力再下沉</p>
+                    <div class="item-tags"><span class="tag">#LlamaIndex</span> <span class="tag">#LiteParse</span> <span class="tag">#文档解析</span> <span class="tag">#本地</span></div>
                 </article>
 
                 </div>
@@ -108,20 +117,20 @@
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">“megadocs”预训练法提效 1.8×</h3>
+                        <h3 class="news-title">合成 Megadocs 预训练法</h3>
                         <a href="https://x.com/konwookim/status/2035029597491011984" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">斯坦福团队用合成长文档预训练，小域数据抗过拟合</p>
-                    <div class="item-tags"><span class="tag">#Stanford</span> <span class="tag">#预训练</span> <span class="tag">#数据效率</span></div>
+                    <p class="news-summary">斯坦福团队用合成长文档预训练，数据效率提升 1.8 倍</p>
+                    <div class="item-tags"><span class="tag">#Stanford</span> <span class="tag">#预训练</span> <span class="tag">#合成数据</span> <span class="tag">#数据效率</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">RL 扩至检索与预测</h3>
+                        <h3 class="news-title">RL 扩展至代码搜索与预测</h3>
                         <a href="https://x.com/gneubig/status/2035037624105410926" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">CMU/Meta 用纯 bash 做代码搜索 RL，Tinker 用 RL 超前线模型预测事件</p>
-                    <div class="item-tags"><span class="tag">#RL</span> <span class="tag">#代码搜索</span> <span class="tag">#超预测</span></div>
+                    <p class="news-summary">CMU/Meta 用纯 bash 环境 RL 训练代码检索；Tinker 用 RL 打造超预测模型</p>
+                    <div class="item-tags"><span class="tag">#RL</span> <span class="tag">#代码搜索</span> <span class="tag">#超预测</span> <span class="tag">#CMU</span></div>
                 </article>
 
                 </div>
@@ -140,8 +149,8 @@
                         <h3 class="news-title">LangChain 推出 Deep Agents & Fleet</h3>
                         <a href="https://x.com/hwchase17/status/2035035096806510872" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">开源 Claude Code 替代+多 agent 工作流，配套可靠性课程</p>
-                    <div class="item-tags"><span class="tag">#LangChain</span> <span class="tag">#Deep Agents</span> <span class="tag">#Fleet</span></div>
+                    <p class="news-summary">开源 Claude Code 替代与多代理工作流平台同步上线</p>
+                    <div class="item-tags"><span class="tag">#LangChain</span> <span class="tag">#Deep Agents</span> <span class="tag">#Fleet</span> <span class="tag">#代理框架</span></div>
                 </article>
 
                 <article class="news-card">
@@ -149,17 +158,17 @@
                         <h3 class="news-title">HermesWorkspace v0.2.0 发布</h3>
                         <a href="https://x.com/outsource_/status/2034788187944431914" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">一键启动、并行搜索、工作流录制回放，集成 Camel Guard 0.4</p>
-                    <div class="item-tags"><span class="tag">#Hermes</span> <span class="tag">#本地 agent</span> <span class="tag">#Camel Guard</span></div>
+                    <p class="news-summary">一键启动、并行搜索、工作流录制回放，强化提示注入防御</p>
+                    <div class="item-tags"><span class="tag">#HermesWorkspace</span> <span class="tag">#本地代理</span> <span class="tag">#工作流</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">LiteParse 本地文档解析</h3>
-                        <a href="https://x.com/jerryjliu0/status/2034790590572060848" class="item-link" target="_blank" rel="noopener">详情</a>
+                        <h3 class="news-title">Local Deep Researcher 本地研究循环</h3>
+                        <a href="https://x.com/ihtesham2005/status/2035009684386771306" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">LlamaIndex 免费轻量解析器，一行命令接入 40+ agent</p>
-                    <div class="item-tags"><span class="tag">#LlamaIndex</span> <span class="tag">#LiteParse</span> <span class="tag">#文档解析</span></div>
+                    <p class="news-summary">MIT 授权项目，用 Ollama 模型离线完成搜索-写作-引用闭环</p>
+                    <div class="item-tags"><span class="tag">#本地研究</span> <span class="tag">#Ollama</span> <span class="tag">#MIT</span> <span class="tag">#离线</span></div>
                 </article>
 
                 </div>
@@ -167,7 +176,7 @@
 
 
         <footer class="keywords-footer">
-            <p>#关键词: Cursor | Kimi K2.5 | NVIDIA Nemotron-Cascade 2 | megadocs | Claude Code | LangChain | Hermes | V-JEPA 2.1 | Fireworks | RL</p>
+            <p>#关键词: Cursor | Kimi K2.5 | NVIDIA Nemotron-Cascade 2 | Claude Code | LangChain | V-JEPA 2.1 | Mistral Small 4 | RL 训练 | 文档解析 | 本地代理</p>
         </footer>
 
         </main>
