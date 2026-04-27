@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Daily · 2026年4月24日 星期五</title>
     <meta name="description" content="每日 AI 前沿资讯，智能分类，快速掌握核心动态">
-    <meta name="keywords" content="DeepSeek V4, 1M 上下文, KV 缓存压缩, MIT 许可, FP4/FP8 量化, 开源模型, agentic coding, vLLM, B200, Togethercompute, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
+    <meta name="keywords" content="DeepSeek V4, 1M上下文, KV压缩, MIT开源, Opus 4.7, vLLM, FP4/FP8, Blackwell Ultra, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-theme="blue">
@@ -24,9 +24,9 @@
             <section class="summary-card">
                 <h2 class="section-title">📌 今日核心摘要</h2>
                 <ul class="summary-list">
-                <li class="summary-item">DeepSeek V4 双模型开源，1M 上下文+10× KV 缓存压缩</li>
-                <li class="summary-item">V4 Pro 登顶开源榜，代码代理能力超 Claude Sonnet</li>
-                <li class="summary-item">MIT 许可+FP4/FP8 量化，单节点 8×B200 可跑</li>
+                <li class="summary-item">DeepSeek V4 Pro/Flash 1M上下文开源，MIT授权</li>
+                <li class="summary-item">新KV压缩架构，KV缓存缩小10×，推理成本骤降</li>
+                <li class="summary-item">V4 Pro 跃居开源榜眼，代码智能逼近Opus 4.7</li>
                 </ul>
             </section>
 
@@ -44,8 +44,28 @@
                         <h3 class="news-title">DeepSeek V4 双模型开源</h3>
                         <a href="https://news.smol.ai/issues/26-04-24-deepseek-v4/" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">1.6T/284B 参数、1M 上下文、MIT 许可，刷新开源长文本与代理代码能力</p>
+                    <p class="news-summary">1.6T/284B参数、1M上下文、MIT授权，刷新开源长文本与代码能力</p>
                     <div class="item-tags"><span class="tag">#DeepSeek</span> <span class="tag">#V4 Pro</span> <span class="tag">#V4 Flash</span> <span class="tag">#开源</span></div>
+                </article>
+
+                </div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <span class="category-icon">📚</span>
+                    <h2 class="category-title">研究论文</h2>
+                    <span class="category-count">1</span>
+                </div>
+                <div class="news-grid">
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">DeepSeek V4 技术报告获赞</h3>
+                        <a href="https://news.smol.ai/issues/26-04-24-deepseek-v4/" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">混合注意力+KV压缩细节公开，被称年度最清晰模型论文之一</p>
+                    <div class="item-tags"><span class="tag">#DeepSeek</span> <span class="tag">#技术报告</span> <span class="tag">#KV压缩</span> <span class="tag">#稀疏注意力</span></div>
                 </article>
 
                 </div>
@@ -61,31 +81,11 @@
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">vLLM 等 day-0 支持 V4</h3>
+                        <h3 class="news-title">vLLM 等 Day-0 支持 V4</h3>
                         <a href="https://news.smol.ai/issues/26-04-24-deepseek-v4/" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">vLLM、Together、Baseten 等上线 V4 推理，Blackwell Ultra 跑 150+ TPS</p>
-                    <div class="item-tags"><span class="tag">#vLLM</span> <span class="tag">#Togethercompute</span> <span class="tag">#Baseten</span> <span class="tag">#Blackwell</span></div>
-                </article>
-
-                </div>
-            </section>
-
-            <section class="category-section">
-                <div class="category-header">
-                    <span class="category-icon">💼</span>
-                    <h2 class="category-title">产品动态</h2>
-                    <span class="category-count">1</span>
-                </div>
-                <div class="news-grid">
-
-                <article class="news-card">
-                    <div class="news-card-header">
-                        <h3 class="news-title">DeepSeek API 定价公布</h3>
-                        <a href="https://news.smol.ai/issues/26-04-24-deepseek-v4/" class="item-link" target="_blank" rel="noopener">详情</a>
-                    </div>
-                    <p class="news-summary">V4 Pro 1.74/3.48 美元每百万 tokens，Flash 0.14/0.28 美元，缓存命中更低价</p>
-                    <div class="item-tags"><span class="tag">#DeepSeek</span> <span class="tag">#API 定价</span> <span class="tag">#token 成本</span></div>
+                    <p class="news-summary">vLLM、Together、Baseten 上线 V4 推理，单 B200 节点可跑 1.6T 模型</p>
+                    <div class="item-tags"><span class="tag">#vLLM</span> <span class="tag">#Together</span> <span class="tag">#Baseten</span> <span class="tag">#推理优化</span></div>
                 </article>
 
                 </div>
@@ -93,7 +93,7 @@
 
 
         <footer class="keywords-footer">
-            <p>#关键词: DeepSeek V4 | 1M 上下文 | KV 缓存压缩 | MIT 许可 | FP4/FP8 量化 | 开源模型 | agentic coding | vLLM | B200 | Togethercompute</p>
+            <p>#关键词: DeepSeek V4 | 1M上下文 | KV压缩 | MIT开源 | Opus 4.7 | vLLM | FP4/FP8 | Blackwell Ultra</p>
         </footer>
 
         </main>
