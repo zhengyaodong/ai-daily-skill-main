@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Daily · 2026年4月27日 星期一</title>
     <meta name="description" content="每日 AI 前沿资讯，智能分类，快速掌握核心动态">
-    <meta name="keywords" content="OpenAI, GPT-5.5, AWS Bedrock, GitHub Copilot, Xiaomi MiMo-V2.5, Kimi K2.6, TPU v8, vLLM, Symphony, Conductor, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
+    <meta name="keywords" content="OpenAI, GPT-5.5, AWS Bedrock, GitHub Copilot, MiMo-V2.5, Sakana Conductor, DeepSeek V4, TPU v8, 多智能体, 按量计费, AI, 人工智能, 机器学习, 深度学习, 资讯, 日报">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-theme="blue">
@@ -24,9 +24,11 @@
             <section class="summary-card">
                 <h2 class="section-title">📌 今日核心摘要</h2>
                 <ul class="summary-list">
-                <li class="summary-item">OpenAI解除Azure独占，模型将登陆AWS Bedrock</li>
-                <li class="summary-item">GPT-5.5小幅升级，代码与搜索榜前列</li>
-                <li class="summary-item">GitHub Copilot 6月起按量计费，Codex定价同步调整</li>
+                <li class="summary-item">OpenAI结束Azure独占，模型将登陆AWS Bedrock</li>
+                <li class="summary-item">GPT-5.5发布：代码提升但综合仍落后Opus 4.7</li>
+                <li class="summary-item">GitHub Copilot 6月起改为按量计费，Codex定价同步上调</li>
+                <li class="summary-item">小米开源MiMo-V2.5系列，1M上下文MIT授权</li>
+                <li class="summary-item">Sakana 7B Conductor多智能体编排刷新代码评测纪录</li>
                 </ul>
             </section>
 
@@ -41,29 +43,29 @@
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">GPT-5.5社区评估出炉</h3>
+                        <h3 class="news-title">GPT-5.5升级发布</h3>
                         <a href="https://x.com/arena/status/2048794479646388732" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">WeirdML 67.1%小幅提升，代码/搜索榜前三，高推理档待测</p>
-                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#GPT-5.5</span></div>
+                    <p class="news-summary">中等推理档位上线，代码Arena第9，Math第3，仍逊Opus 4.7</p>
+                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#GPT-5.5</span> <span class="tag">#LMSYS</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Xiaomi开源MiMo-V2.5系列</h3>
+                        <h3 class="news-title">小米MiMo-V2.5开源</h3>
                         <a href="https://x.com/XiaomiMiMo/status/2048821516079661561" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">MIT授权，1M上下文，Pro版1T/42B参数，vLLM当日适配</p>
-                    <div class="item-tags"><span class="tag">#Xiaomi</span> <span class="tag">#MiMo-V2.5</span></div>
+                    <p class="news-summary">1M上下文、MIT协议，Pro版42B激活，支持vLLM/SGLang</p>
+                    <div class="item-tags"><span class="tag">#小米</span> <span class="tag">#MiMo-V2.5</span> <span class="tag">#开源</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">Kimi K2.6登顶OpenRouter榜</h3>
+                        <h3 class="news-title">Kimi K2.6登顶OpenRouter</h3>
                         <a href="https://x.com/Kimi_Moonshot/status/2048693682329776223" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">300子代理4000步长任务能力，代码修复表现优于DeepSeek V4</p>
-                    <div class="item-tags"><span class="tag">#Kimi</span> <span class="tag">#Moonshot</span></div>
+                    <p class="news-summary">300并发子智能体、4000步长程任务，编码表现超DeepSeek V4</p>
+                    <div class="item-tags"><span class="tag">#Kimi</span> <span class="tag">#Moonshot</span> <span class="tag">#长上下文</span></div>
                 </article>
 
                 </div>
@@ -73,7 +75,7 @@
                 <div class="category-header">
                     <span class="category-icon">💼</span>
                     <h2 class="category-title">产品动态</h2>
-                    <span class="category-count">2</span>
+                    <span class="category-count">3</span>
                 </div>
                 <div class="news-grid">
 
@@ -82,17 +84,26 @@
                         <h3 class="news-title">OpenAI解除Azure独占</h3>
                         <a href="https://x.com/sama/status/2048755148361707946" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">与微软续约至2032，模型可上架所有云，AWS Bedrock数周内上线</p>
-                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#Microsoft</span> <span class="tag">#AWS</span></div>
+                    <p class="news-summary">模型可上架所有云，微软授权转非独占，AGI条款实质废除</p>
+                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#Azure</span> <span class="tag">#AWS</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">GitHub Copilot改用量计费</h3>
+                        <h3 class="news-title">GitHub Copilot改按量计费</h3>
                         <a href="https://x.com/github/status/2048794729274278258" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">6月1日起按token收费，Codex 5.5 fast 2.5倍系数，同步开源Symphony</p>
-                    <div class="item-tags"><span class="tag">#GitHub</span> <span class="tag">#Copilot</span> <span class="tag">#Codex</span></div>
+                    <p class="news-summary">6月1日起弃固定订阅，Agent高消耗模式推动成本透明化</p>
+                    <div class="item-tags"><span class="tag">#GitHub</span> <span class="tag">#Copilot</span> <span class="tag">#定价</span></div>
+                </article>
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">OpenAI Symphony开源</h3>
+                        <a href="https://x.com/OpenAIDevs/status/2048825010371039648" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">连接Issue追踪与Codex Agent，自动PR并等待人工评审</p>
+                    <div class="item-tags"><span class="tag">#OpenAI</span> <span class="tag">#Symphony</span> <span class="tag">#Codex</span></div>
                 </article>
 
                 </div>
@@ -111,26 +122,26 @@
                         <h3 class="news-title">Sakana Conductor 7B发布</h3>
                         <a href="https://x.com/SakanaAILabs/status/2048777689763639741" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">RL训练多Agent调度器，LiveCodeBench 83.9%，GPQA-Diamond 87.5%</p>
-                    <div class="item-tags"><span class="tag">#Sakana</span> <span class="tag">#Conductor</span></div>
+                    <p class="news-summary">RL训练多智能体编排器，LiveCodeBench 83.9%，超越单模型</p>
+                    <div class="item-tags"><span class="tag">#Sakana</span> <span class="tag">#Conductor</span> <span class="tag">#多智能体</span></div>
                 </article>
 
                 <article class="news-card">
                     <div class="news-card-header">
-                        <h3 class="news-title">vLLM 0.20.0整合DeepSeek V4</h3>
-                        <a href="https://x.com/vllm_project/status/2048918629144805619" class="item-link" target="_blank" rel="noopener">详情</a>
-                    </div>
-                    <p class="news-summary">支持FP4/FP8专家分离、TurboQuant 2-bit KV，Blackwell MegaMoE路径</p>
-                    <div class="item-tags"><span class="tag">#vLLM</span> <span class="tag">#DeepSeek</span></div>
-                </article>
-
-                <article class="news-card">
-                    <div class="news-card-header">
-                        <h3 class="news-title">Gemma 4本地浏览器代理</h3>
+                        <h3 class="news-title">Gemma 4本地浏览器Agent</h3>
                         <a href="https://x.com/googlegemma/status/2048805789788413984" class="item-link" target="_blank" rel="noopener">详情</a>
                     </div>
-                    <p class="news-summary">WebGPU驱动，原生工具调用，可离线管理标签与摘要</p>
-                    <div class="item-tags"><span class="tag">#Google</span> <span class="tag">#Gemma</span></div>
+                    <p class="news-summary">WebGPU+原生工具调用，实现完全本地页面摘要与标签管理</p>
+                    <div class="item-tags"><span class="tag">#Gemma 4</span> <span class="tag">#WebGPU</span> <span class="tag">#本地Agent</span></div>
+                </article>
+
+                <article class="news-card">
+                    <div class="news-card-header">
+                        <h3 class="news-title">Devin for Terminal上线</h3>
+                        <a href="https://x.com/cognition/status/2048821234281181302" class="item-link" target="_blank" rel="noopener">详情</a>
+                    </div>
+                    <p class="news-summary">本地Shell Agent可无缝切换云端，支持长任务断点续跑</p>
+                    <div class="item-tags"><span class="tag">#Cognition</span> <span class="tag">#Devin</span> <span class="tag">#本地优先</span></div>
                 </article>
 
                 </div>
@@ -138,7 +149,7 @@
 
 
         <footer class="keywords-footer">
-            <p>#关键词: OpenAI | GPT-5.5 | AWS Bedrock | GitHub Copilot | Xiaomi MiMo-V2.5 | Kimi K2.6 | TPU v8 | vLLM | Symphony | Conductor</p>
+            <p>#关键词: OpenAI | GPT-5.5 | AWS Bedrock | GitHub Copilot | MiMo-V2.5 | Sakana Conductor | DeepSeek V4 | TPU v8 | 多智能体 | 按量计费</p>
         </footer>
 
         </main>
