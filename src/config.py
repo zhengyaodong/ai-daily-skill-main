@@ -12,13 +12,13 @@ load_dotenv()
 # API 配置
 # ============================================================================
 
-# Kimi API 配置（适用于 kimi-k2-0905-preview）
+# 阿里百炼（DashScope）API 配置（OpenAI 兼容接口）
 K2_BASE_URL = os.getenv(
     "K2_BASE_URL",
-    "https://api.moonshot.cn/v1"  # Kimi API 基础 URL
+    "https://dashscope.aliyuncs.com/compatible-mode/v1"  # 阿里百炼 OpenAI 兼容 URL
 )
 K2_API_KEY = os.getenv("K2_API_KEY")
-K2_MODEL = os.getenv("K2_MODEL", "kimi-k2-0905-preview")  # Kimi 模型名称
+K2_MODEL = os.getenv("K2_MODEL", "qwen3.7-plus")  # 通义千问模型名称
 K2_MAX_TOKENS = 8192
 K2_API_ENDPOINT = os.getenv("K2_API_ENDPOINT", "/chat/completions")  # API 端点路径
 
@@ -31,7 +31,19 @@ CLAUDE_MAX_TOKENS = K2_MAX_TOKENS
 # ============================================================================
 # RSS 配置
 # ============================================================================
-RSS_URL = os.getenv("RSS_URL", "https://news.smol.ai/rss.xml")
+# 默认使用单源配置
+RSS_URL = os.getenv("RSS_URL", "https://techcrunch.com/category/artificial-intelligence/feed/")
+# 多源配置（推荐）- 稳定且丰富的AI资讯源集合
+RSS_URLS = [
+    "https://techcrunch.com/category/artificial-intelligence/feed/",  # TechCrunch AI专栏 - 高频更新
+    "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",  # The Verge AI - 权威科技媒体
+    "https://www.technologyreview.com/topic/artificial-intelligence/feed/",  # MIT技术评论AI - 深度分析
+    "https://www.marktechpost.com/feed/",  # MarkTechPost - AI论文和发布快速报道
+    "https://openai.com/news/rss.xml",  # OpenAI官方新闻 - 模型发布第一手
+    "https://huggingface.co/blog/feed.xml",  # Hugging Face博客 - 模型和工具生态
+    "https://hnrss.org/newest?q=ai",  # Hacker News AI主题 - 社区热门
+    "http://export.arxiv.org/rss/cs.AI",  # arXiv人工智能学术论文 - 研究前沿
+]
 RSS_TIMEOUT = 30  # 秒
 
 # ============================================================================
@@ -57,6 +69,25 @@ SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 NOTIFICATION_TO = os.getenv("NOTIFICATION_TO")
 DISABLE_EMAIL_NOTIFICATION = os.getenv("DISABLE_EMAIL_NOTIFICATION") == "true"
+
+# ============================================================================
+# 邮件自动转发配置
+# ============================================================================
+# IMAP配置（用于读取源邮箱）
+IMAP_HOST = os.getenv("IMAP_HOST", "imap.mail.gzus.edu.cn")  # 学校邮箱IMAP服务器
+IMAP_PORT = _get_env_int("IMAP_PORT", 993)  # IMAP SSL端口
+IMAP_USER = os.getenv("IMAP_USER", "zyd@mail.gzus.edu.cn")  # 学校邮箱账号
+IMAP_PASSWORD = os.getenv("IMAP_PASSWORD")  # 学校邮箱密码或授权码
+
+# SMTP配置（用于发送转发邮件，可以使用QQ邮箱或其他SMTP服务器）
+FORWARD_SMTP_HOST = os.getenv("FORWARD_SMTP_HOST", "smtp.qq.com")  # 转发SMTP服务器
+FORWARD_SMTP_PORT = _get_env_int("FORWARD_SMTP_PORT", 587)  # SMTP端口
+FORWARD_SMTP_USER = os.getenv("FORWARD_SMTP_USER")  # 转发SMTP账号（可以是QQ邮箱）
+FORWARD_SMTP_PASSWORD = os.getenv("FORWARD_SMTP_PASSWORD")  # 转发SMTP密码或授权码
+FORWARD_TO_EMAIL = os.getenv("FORWARD_TO_EMAIL", "283406@qq.com")  # 转发目标邮箱
+
+# 状态文件路径（记录已转发的邮件）
+STATE_FILE_PATH = os.getenv("STATE_FILE_PATH", "email_forwarder_state.json")
 
 # ============================================================================
 # 8种主题配色方案

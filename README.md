@@ -13,16 +13,17 @@ $\color{#FF0000}{想每天咖啡时间就帮你找到好的选题，自动发给
 
 ## 简介
 
-AI Daily 是一个 Claude Code Skill，帮助你在 Claude Code 中快速获取 AI 行业资讯。它从 [smol.ai](https://news.smol.ai/) 获取资讯，使用内置的 Claude AI 能力进行智能分析和分类，生成结构化的 Markdown 文档，并可按需生成精美的网页。
+AI Daily 是一个 Claude Code Skill，帮助你在 Claude Code 中快速获取 AI 行业资讯。它从多个权威 RSS 源（TechCrunch、The Verge、MIT Technology Review、OpenAI、Hugging Face、arXiv 等）聚合资讯，使用阿里百炼（通义千问 Qwen）大模型进行智能分析和分类，生成结构化的 Markdown 文档，并可按需生成精美的网页。
 
 ### 核心功能
 
-- 每天自动获取 AI 行业资讯
-- Claude AI 智能摘要和分类
+- 多源 RSS 聚合获取 AI 行业资讯（8个权威数据源）
+- 阿里百炼（通义千问 Qwen）大模型智能摘要和分类
 - 支持相对日期查询（昨天、前天等）
 - 可选生成精美网页（苹果风/深海蓝/秋日暖阳主题）
 - 可选生成分享卡片图片（智能尺寸，适合社交媒体分享）
 - 可选生成小红书风格封面（3:4 比例，极简格栅设计）
+- 邮件通知（成功/空数据/错误三种通知类型）
 - 友好的用户体验，无数据时提供建议
 
 ---
@@ -219,7 +220,7 @@ A: 分享卡片图片保存在 `docs/images/` 目录，文件名为 `{日期}.pn
 
 ### Q: 需要配置 API Key 吗？
 
-A: 不需要。Skill 使用 Claude Code 内置的 AI 能力，无需额外配置。
+A: GitHub Actions 自动化运行需要配置阿里百炼 API Key。在 Claude Code 中作为 Skill 使用时则无需额外配置。
 
 ### Q: 如何启用图片生成功能？
 
@@ -242,9 +243,11 @@ A: 可以。主题提示词在 `references/html-themes.md` 中，可以修改或
 ### 环境变量
 
 ```bash
-# Claude API 配置（必需）
-ZHIPU_API_KEY=your_api_key
-ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+# 阿里百炼（通义千问 Qwen）API 配置（必需）
+K2_API_KEY=your_dashscope_api_key
+K2_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+K2_MODEL=qwen3.7-plus
+K2_API_ENDPOINT=/chat/completions
 
 # 图片生成配置（可选）
 ENABLE_IMAGE_GENERATION=true
@@ -277,3 +280,5 @@ python plugins/ai-daily/skills/ai-daily/scripts/fetch_news.py --date 2026-01-13
 # 获取昨天的内容
 python plugins/ai-daily/skills/ai-daily/scripts/fetch_news.py --relative yesterday
 ```
+
+---

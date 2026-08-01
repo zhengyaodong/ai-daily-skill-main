@@ -61,7 +61,7 @@ def main():
     # 检查环境变量
     if not ZHIPU_API_KEY:
         print("❌ 错误: K2_API_KEY 环境变量未设置")
-        print("   请设置 K2 大模型的 API Key")
+        print("   请设置阿里百炼（通义千问）的 API Key")
         sys.exit(1)
 
     # 初始化组件
@@ -73,7 +73,7 @@ def main():
         total_steps += 1
 
     try:
-        # 1. 计算目标日期 (今天 - 2天)
+        # 1. 计算目标日期 (今天 - 1天)
         target_date = get_target_date(days_offset=2)
         print(f"[目标日期] {target_date}")
         print(f"   (北京时间: {datetime.now(timezone.utc) + timedelta(hours=8)} + 8h)")
@@ -124,7 +124,7 @@ def main():
         print()
 
         # 4. 调用 Claude 分析
-        print(f"[步骤 3/{total_steps}] 调用 Claude 进行智能分析...")
+        print(f"[步骤 3/{total_steps}] 调用通义千问进行智能分析...")
         analyzer = ClaudeAnalyzer()
         result = analyzer.analyze(content, target_date)
 

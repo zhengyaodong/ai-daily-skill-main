@@ -1,6 +1,6 @@
 """
 AI 分析模块
-使用 K2 大模型对资讯内容进行智能分析、分类和摘要
+使用阿里百炼（通义千问 Qwen）大模型对资讯内容进行智能分析、分类和摘要
 """
 import os
 import json
@@ -20,11 +20,11 @@ from src.config import (
 
 
 class ClaudeAnalyzer:
-    """K2 AI 分析器（兼容旧类名）"""
+    """阿里百炼（通义千问 Qwen）AI 分析器（兼容旧类名）"""
 
     def __init__(self, api_key: str = None, base_url: str = None):
         """
-        初始化 K2 客户端
+        初始化阿里百炼客户端
 
         Args:
             api_key: API 密钥，默认从环境变量读取
@@ -38,7 +38,7 @@ class ClaudeAnalyzer:
         if not self.api_key:
             raise ValueError("K2_API_KEY 环境变量未设置")
 
-        print(f"✅ K2 客户端初始化成功")
+        print(f"✅ 阿里百炼客户端初始化成功")
         print(f"   Base URL: {self.base_url}")
         print(f"   Model: {self.model}")
 
@@ -62,7 +62,7 @@ class ClaudeAnalyzer:
         if not content or not content.get("content"):
             return self._empty_result(target_date, "内容为空")
 
-        print(f"🤖 正在调用 K2 大模型分析内容...")
+        print(f"🤖 正在调用通义千问大模型分析内容...")
 
         # 构建提示词
         prompt = self._build_prompt(content, target_date)
@@ -73,7 +73,7 @@ class ClaudeAnalyzer:
             print(f"🔗 调用 API 路径: {api_url}")
             print(f"🔍 请求模型: {self.model}")
             
-            # 调用 K2 API
+            # 调用阿里百炼 API
             response = requests.post(
                 api_url,
                 headers={
@@ -99,7 +99,7 @@ class ClaudeAnalyzer:
             # 尝试解析响应
             try:
                 response_data = response.json()
-                print(f"📋 K2 API 响应: {response_data}")
+                print(f"📋 百炼 API 响应: {response_data}")
             except json.JSONDecodeError:
                 print(f"📝 响应内容: {response.text}")
                 raise Exception(f"API 响应不是有效的 JSON 格式")
@@ -134,7 +134,7 @@ class ClaudeAnalyzer:
                 result_text = str(response_data)
                 print("⚠️ 无法解析响应格式，使用原始响应")
             else:
-                print(f"✅ K2 大模型响应成功，响应长度: {len(str(result_text))} 字符")
+                print(f"✅ 通义千问大模型响应成功，响应长度: {len(str(result_text))} 字符")
             
             result_text = str(result_text)
 
@@ -144,7 +144,7 @@ class ClaudeAnalyzer:
             return result
 
         except Exception as e:
-            print(f"❌ Claude API 调用失败: {e}")
+            print(f"❌ 百炼 API 调用失败: {e}")
             # 返回带有原始内容的结果，让生成器可以继续工作
             return {
                 "status": "success",
