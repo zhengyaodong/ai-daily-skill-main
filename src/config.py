@@ -13,11 +13,9 @@ load_dotenv()
 # ============================================================================
 
 # 阿里百炼（DashScope）API 配置（OpenAI 兼容接口）
-K2_BASE_URL = os.getenv(
-    "K2_BASE_URL",
-    "https://dashscope.aliyuncs.com/compatible-mode/v1"  # 阿里百炼 OpenAI 兼容 URL
-)
-K2_API_KEY = os.getenv("K2_API_KEY")
+# 兼容旧变量名 ZHIPU_API_KEY / ANTHROPIC_BASE_URL，确保旧配置仍可工作
+K2_BASE_URL = os.getenv("K2_BASE_URL") or os.getenv("ANTHROPIC_BASE_URL") or "https://dashscope.aliyuncs.com/compatible-mode/v1"
+K2_API_KEY = os.getenv("K2_API_KEY") or os.getenv("ZHIPU_API_KEY")
 K2_MODEL = os.getenv("K2_MODEL", "qwen3.7-plus")  # 通义千问模型名称
 K2_MAX_TOKENS = 8192
 K2_API_ENDPOINT = os.getenv("K2_API_ENDPOINT", "/chat/completions")  # API 端点路径

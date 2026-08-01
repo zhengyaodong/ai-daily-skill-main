@@ -72,6 +72,7 @@ class ClaudeAnalyzer:
             api_url = f"{self.base_url.rstrip('/')}{K2_API_ENDPOINT}"
             print(f"🔗 调用 API 路径: {api_url}")
             print(f"🔍 请求模型: {self.model}")
+            print(f"🔑 API Key: {self.api_key[:10]}...{self.api_key[-4:]}" if self.api_key else "🔑 API Key: 未设置")
             
             # 调用阿里百炼 API
             response = requests.post(
@@ -145,6 +146,9 @@ class ClaudeAnalyzer:
 
         except Exception as e:
             print(f"❌ 百炼 API 调用失败: {e}")
+            print(f"❌ 错误类型: {type(e).__name__}")
+            import traceback
+            print(f"❌ 错误详情: {traceback.format_exc()}")
             # 返回带有原始内容的结果，让生成器可以继续工作
             return {
                 "status": "success",

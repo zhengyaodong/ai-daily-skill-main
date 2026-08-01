@@ -78,9 +78,14 @@ jobs:
 
       - name: 运行 AI Daily 生成器
         env:
-          # 阿里百炼 API 配置
-          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
-          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          # 阿里百炼 API 配置（优先使用 K2_* 变量，兼容旧变量名）
+          K2_API_KEY: ${{ secrets.K2_API_KEY }}
+          K2_BASE_URL: ${{ secrets.K2_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1' }}
+          K2_MODEL: ${{ secrets.K2_MODEL || 'qwen3.7-plus' }}
+          K2_API_ENDPOINT: ${{ secrets.K2_API_ENDPOINT || '/chat/completions' }}
+          # 兼容旧变量名（如果 K2_* 未配置，回退到旧变量）
+          ZHIPU_API_KEY: ${{ secrets.K2_API_KEY || secrets.ZHIPU_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.K2_BASE_URL || secrets.ANTHROPIC_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1' }}
 
           # 邮件通知配置
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
