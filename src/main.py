@@ -32,7 +32,7 @@ def print_banner():
 ║                                                              ║
 ║   AI Daily - AI 资讯日报自动生成器                          ║
 ║                                                              ║
-║   自动获取 smol.ai 资讯 · Claude 智能分析                   ║
+║   多源 RSS 聚合 · 通义千问智能分析                          ║
 ║   精美 HTML 页面 · 自动部署                                 ║
 ║                                                              ║
 ╚════════════════════════════════════════════════════════════╝
@@ -40,12 +40,12 @@ def print_banner():
     print(banner)
 
 
-def get_target_date(days_offset: int = 2) -> str:
+def get_target_date(days_offset: int = 1) -> str:
     """
     获取目标日期
 
     Args:
-        days_offset: 向前偏移的天数，默认2天
+        days_offset: 向前偏移的天数，默认1天（昨天）
 
     Returns:
         格式化的日期字符串 (YYYY-MM-DD)
@@ -73,8 +73,8 @@ def main():
         total_steps += 1
 
     try:
-        # 1. 计算目标日期 (今天 - 1天)
-        target_date = get_target_date(days_offset=2)
+        # 1. 计算目标日期 (今天 - 1天，即昨天)
+        target_date = get_target_date(days_offset=1)
         print(f"[目标日期] {target_date}")
         print(f"   (北京时间: {datetime.now(timezone.utc) + timedelta(hours=8)} + 8h)")
         print()
@@ -211,7 +211,7 @@ def main():
         # 发送错误通知（如果配置了邮件）
         if email_enabled:
             try:
-                target_date = get_target_date(days_offset=2)
+                target_date = get_target_date(days_offset=1)
                 notifier.send_error(target_date, str(e))
             except:
                 pass
