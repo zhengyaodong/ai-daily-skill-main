@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest.mock import patch
 
 import feedparser
@@ -50,24 +51,60 @@ class DailyNewsTest(unittest.TestCase):
 
     @patch("src.claude_analyzer.requests.post")
     def test_all_article_links_reach_model_and_valid_analysis_is_kept(self, post):
-        expected = [{"title": entry.title, "url": entry.link} for entry in self.entries]
-        response = {"categories": [{"name": "AI", "items": expected}]}
-        post.return_value.json.return_value = {
-            "choices": [{"message": {"content": json.dumps(response)}}],
-        }
+        self.analyzer.model = "kimi-k3.1-pro"
+        expected = [
+            {"title": f"中文资讯 {index}", "summary": "模型分析的影响", "url": entry.link}
+            for index, entry in enumerate(self.entries, 1)
+        ]
+        model_items = [
+            {"title": item["title"], "summary": item["summary"], "source_id": index}
+            for index, item in enumerate(expected, 1)
+        ]
+        model_items.extend([
+            {"title": "重复文章", "summary": "已有文章", "source_id": 1},
+            {"title": "无对应来源", "summary": "跳过", "source_id": 99},
+        ])
+        response = {"summary": ["大模型生成的中文核心摘要"], "categories": [
+            {"key": "model", "items": model_items}
+        ]}
+        post.return_value = self._completion(json.dumps(response))
 
         content = self.fetcher.get_content_by_date(self.date, self.feed)
         result = self.analyzer.analyze(content, self.date)
 
         self.assertEqual(len(content["articles"]), 3)
-        prompt = post.call_args.kwargs["json"]["messages"][0]["content"]
+        request_data = post.call_args.kwargs["json"]
+        self.assertEqual(request_data["model"], "kimi-k3.1-pro")
+        self.assertNotIn("temperature", request_data)
+        prompt = request_data["messages"][0]["content"]
         for entry in self.entries:
             self.assertIn(entry.title, prompt)
             self.assertIn(entry.link, prompt)
         self.assertLess(len(prompt), 15000)
         items = result["categories"][0]["items"]
-        self.assertEqual([{key: item[key] for key in ("title", "url")} for item in items], expected)
+        self.assertEqual([{key: item[key] for key in expected[0]} for item in items], expected)
         self.assertEqual([item["published_date"] for item in items], [self.date] * 3)
+
+        with tempfile.TemporaryDirectory() as output_dir:
+            html_path = HTMLGenerator(output_dir).generate_daily(result)
+            html = Path(html_path).read_text(encoding="utf-8")
+            self.assertIn("大模型生成的中文核心摘要", html)
+            self.assertIn("模型分析的影响", html)
+            self.assertIn("https://example.test/second?a=1&amp;b=2", html)
+            self.assertNotIn("RSS 原始资讯", html)
+
+    @staticmethod
+    def _api_response(status_code, payload):
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = json.dumps(payload).encode("utf-8")
+        return response
+
+    @classmethod
+    def _completion(cls, text):
+        return cls._api_response(200, {
+            "choices": [{"finish_reason": "stop", "message": {"content": text}}],
+        })
 
     @staticmethod
     def _additional_entries(count, day, host):
@@ -102,42 +139,51 @@ class DailyNewsTest(unittest.TestCase):
         self.assertEqual({article["published_date"] for article in articles}, {self.date, "2026-11-21"})
 
     @patch("src.claude_analyzer.requests.post")
-    def test_three_model_items_trigger_fallback_when_sources_have_more(self, post):
+    def test_keeps_a_shorter_deduplicated_digest(self, post):
         self.feed.entries.extend(self._additional_entries(14, 22, "github.blog"))
-        post.return_value.json.return_value = {
-            "choices": [{"message": {"content": json.dumps({
-                "categories": [{"items": [
-                    {"title": "Model summary", "url": entry.link} for entry in self.entries
-                ]}],
-            })}}],
-        }
+        post.return_value = self._completion(json.dumps({
+            "summary": ["合并重复报道后的重点"],
+            "categories": [{"key": "tools", "items": [
+                {"title": "工具动态", "summary": "发布新的开发工具", "url": entry.link}
+                for entry in self.entries
+            ]}],
+        }))
         content = self.fetcher.get_digest_content(self.date, self.feed)
         result = self.analyzer.analyze(content, self.date)
 
-        self.assertEqual(len(result["categories"][0]["items"]), 15)
-        self.assertEqual(result["categories"][0]["name"], "RSS 原始资讯")
+        self.assertEqual(len(result["categories"][0]["items"]), 3)
+        self.assertEqual(result["categories"][0]["name"], "工具框架")
+        post.assert_called_once()
 
     @patch("src.claude_analyzer.requests.post")
-    def test_malformed_or_sparse_analysis_keeps_individual_articles(self, post):
+    def test_invalid_analysis_fails_after_retry(self, post):
         content = self.fetcher.get_content_by_date(self.date, self.feed)
         for response_text in (
             "```json\n{",
             '{"categories": []}',
             '{"status": "empty"}',
-            '{"categories": [{"items": [{"title": "Only one"}]}]}',
+            '{"summary": ["概要"], "categories": [{"key": "model", "items": [{"title": "仅有标题"}]}]}',
         ):
             with self.subTest(response=response_text):
-                post.return_value.json.return_value = {
-                    "choices": [{"message": {"content": response_text}}],
-                }
-                result = self.analyzer.analyze(content, self.date)
-                items = result["categories"][0]["items"]
-                self.assertEqual([item["url"] for item in items], [e.link for e in self.entries])
-                self.assertEqual(items[1]["summary"], "Second summary.")
+                post.reset_mock()
+                post.return_value = self._completion(response_text)
+                with self.assertRaisesRegex(RuntimeError, "百炼资讯分析失败"):
+                    self.analyzer.analyze(content, self.date)
+                self.assertEqual(post.call_count, 2)
+
+    @patch("src.claude_analyzer.requests.post")
+    def test_http_400_reports_api_error_without_retry(self, post):
+        post.return_value = self._api_response(400, {
+            "error": {"message": "Parameter 'temperature'=0.3 is not supported for kimi-k3 model."}
+        })
+        content = self.fetcher.get_content_by_date(self.date, self.feed)
+        with self.assertRaisesRegex(RuntimeError, "HTTP 400.*temperature.*kimi-k3"):
+            self.analyzer.analyze(content, self.date)
+        post.assert_called_once()
 
     @patch("src.claude_analyzer.requests.post", side_effect=requests.Timeout)
     @patch("src.notifier.smtplib.SMTP")
-    def test_api_failure_sends_full_digest_in_email(self, smtp, post):
+    def test_api_failure_preserves_existing_report_and_sends_error_email(self, smtp, post):
         self.feed.entries.extend(self._additional_entries(9, 21, "github.blog"))
         notifier = EmailNotifier(
             host="smtp.example.test", user="sender@example.test",
@@ -156,29 +202,37 @@ class DailyNewsTest(unittest.TestCase):
             patch("src.notifier.DISABLE_EMAIL_NOTIFICATION", False),
             patch("src.notifier.OUTPUT_DIR", output_dir),
         ):
-            main.main()
+            daily_path = Path(output_dir) / f"{self.date}.html"
+            index_path = Path(output_dir) / "index.html"
+            daily_path.write_text("Existing report", encoding="utf-8")
+            index_path.write_text("Existing index", encoding="utf-8")
+            with self.assertRaises(SystemExit) as error, patch("traceback.print_exc"):
+                main.main()
+            self.assertEqual(error.exception.code, 1)
+            self.assertEqual(daily_path.read_text(encoding="utf-8"), "Existing report")
+            self.assertEqual(index_path.read_text(encoding="utf-8"), "Existing index")
 
         send_message = smtp.return_value.__enter__.return_value.send_message
         send_message.assert_called_once()
         message = send_message.call_args.args[0]
-        body = next(part for part in message.walk() if part.get_content_type() == "text/html")
-        html = body.get_payload(decode=True).decode("utf-8")
-        self.assertIn("资讯条数: 12 条", html)
-        self.assertEqual(html.count('<article class="news-card">'), 12)
-        self.assertIn("github.blog · 2026-11-21", html)
-        self.assertIn("First news", html)
-        self.assertIn("Second &amp; third-party news", html)
-        self.assertIn("https://example.test/second?a=1&amp;b=2", html)
-        self.assertIn("Third news", html)
+        self.assertIn("生成失败", str(message["Subject"]))
+        self.assertEqual(post.call_count, 2)
 
-    @patch("src.claude_analyzer.requests.post", side_effect=requests.Timeout)
-    def test_single_article_stays_single(self, post):
+    @patch("src.claude_analyzer.requests.post")
+    def test_single_article_is_analyzed_after_transient_timeout(self, post):
+        post.side_effect = [requests.Timeout(), self._completion(json.dumps({
+            "summary": ["单篇资讯的核心变化"],
+            "categories": [{"key": "research", "items": [
+                {"title": "研究进展", "summary": "介绍研究方法与用途", "source_id": 1}
+            ]}],
+        }))]
         feed = feedparser.FeedParserDict(entries=[self.entries[-1]])
         content = self.fetcher.get_content_by_date(self.date, feed)
         result = self.analyzer.analyze(content, self.date)
 
-        self.assertEqual(result["categories"][0]["items"][0]["title"], "Third news")
+        self.assertEqual(result["categories"][0]["items"][0]["title"], "研究进展")
         self.assertEqual(len(result["categories"][0]["items"]), 1)
+        self.assertEqual(post.call_count, 2)
 
 
 if __name__ == "__main__":

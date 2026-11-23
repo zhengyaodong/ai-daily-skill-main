@@ -33,7 +33,7 @@ def print_banner():
 ║                                                              ║
 ║   AI Daily - AI 资讯日报自动生成器                          ║
 ║                                                              ║
-║   多源 RSS 聚合 · 通义千问智能分析                          ║
+║   多源 RSS 聚合 · 百炼大模型分析                          ║
 ║   精美 HTML 页面 · 自动部署                                 ║
 ║                                                              ║
 ╚════════════════════════════════════════════════════════════╝
@@ -62,7 +62,7 @@ def main():
     # 检查环境变量
     if not ZHIPU_API_KEY:
         print("❌ 错误: K2_API_KEY 环境变量未设置")
-        print("   请设置阿里百炼（通义千问）的 API Key")
+        print("   请设置阿里百炼的 API Key")
         sys.exit(1)
 
     # 初始化组件
@@ -117,8 +117,8 @@ def main():
         print(f"   找到资讯: {content.get('title', '')[:60]}...")
         print()
 
-        # 4. 调用 Claude 分析
-        print(f"[步骤 3/{total_steps}] 调用通义千问进行智能分析...")
+        # 4. 分析失败时由下方错误处理退出，避免发布不完整的日报。
+        print(f"[步骤 3/{total_steps}] 调用百炼大模型进行资讯分析...")
         analyzer = ClaudeAnalyzer()
         result = analyzer.analyze(content, target_date)
 

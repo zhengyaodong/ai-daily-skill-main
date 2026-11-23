@@ -40,7 +40,7 @@ class HTMLGenerator:
         生成日报 HTML 页面
 
         Args:
-            result: Claude 分析结果
+            result: 大模型分析结果
 
         Returns:
             生成的 HTML 文件路径
@@ -105,7 +105,7 @@ class HTMLGenerator:
         </main>
 
         <footer class="footer">
-            <p>© {datetime.now().year} {SITE_META['title']} · 由 Claude AI 自动生成</p>
+            <p>© {datetime.now().year} {SITE_META['title']}</p>
         </footer>
     </div>
 </body>
@@ -134,7 +134,7 @@ class HTMLGenerator:
         summary_html = ""
         if summary:
             summary_items = "\n".join([
-                f'                <li class="summary-item">{item}</li>'
+                f'                <li class="summary-item">{escape(item)}</li>'
                 for item in summary
             ])
             summary_html = f"""
@@ -172,7 +172,7 @@ class HTMLGenerator:
                 # 标签
                 tags_html = ""
                 if item_tags:
-                    tags_span = " ".join([f'<span class="tag">#{tag}</span>' for tag in item_tags[:4]])
+                    tags_span = " ".join(f'<span class="tag">#{escape(tag)}</span>' for tag in item_tags[:4])
                     tags_html = f'<div class="item-tags">{tags_span}</div>'
 
                 # 链接处理
@@ -208,7 +208,7 @@ class HTMLGenerator:
         # 关键词区块
         keywords_html = ""
         if keywords:
-            keywords_str = " | ".join(keywords)
+            keywords_str = " | ".join(escape(keyword) for keyword in keywords)
             keywords_html = f"""
         <footer class="keywords-footer">
             <p>#关键词: {keywords_str}</p>
@@ -223,7 +223,7 @@ class HTMLGenerator:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Daily · {formatted_date}</title>
     <meta name="description" content="{SITE_META['description']}">
-    <meta name="keywords" content="{', '.join(keywords + SITE_META['keywords'])}">
+    <meta name="keywords" content="{escape(', '.join(keywords + SITE_META['keywords']))}">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-theme="{result.get('theme', 'blue')}">
@@ -244,7 +244,7 @@ class HTMLGenerator:
         </main>
 
         <footer class="footer">
-            <p>© {datetime.now().year} {SITE_META['title']} · 由 Claude AI 智能生成</p>
+            <p>© {datetime.now().year} {SITE_META['title']} · 大模型聚合与分析</p>
         </footer>
     </div>
 </body>
@@ -325,7 +325,7 @@ class HTMLGenerator:
                         <span class="entry-date">{formatted_date}</span>
                         <span class="entry-arrow">→</span>
                     </div>
-                    <p class="entry-summary">{summary}</p>
+                    <p class="entry-summary">{escape(summary)}</p>
                 </a>
             </article>
 """
@@ -364,7 +364,7 @@ class HTMLGenerator:
         </main>
 
         <footer class="footer">
-            <p>© {datetime.now().year} {SITE_META['title']} · 由 Claude AI 自动生成</p>
+            <p>© {datetime.now().year} {SITE_META['title']}</p>
         </footer>
     </div>
 </body>
