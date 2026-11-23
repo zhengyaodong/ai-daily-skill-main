@@ -1,12 +1,13 @@
 """
 AI 分析模块
-使用阿里百炼（通义千问 Qwen）大模型对资讯内容进行智能分析、分类和摘要
+使用阿里百炼大模型对资讯内容进行智能分析、分类和摘要
 """
 import json
 import re
 from html import unescape
-from time import sleep
+from time import monotonic, sleep
 from typing import Any, Dict
+from urllib.parse import urlsplit
 
 import requests
 
@@ -23,9 +24,11 @@ from src.config import (
     DEFAULT_THEME
 )
 
+STREAM_TIME_LIMIT = 360
+
 
 class ClaudeAnalyzer:
-    """阿里百炼（通义千问 Qwen）AI 分析器（兼容旧类名）"""
+    """阿里百炼 AI 分析器（兼容旧类名）"""
 
     def __init__(self, api_key: str = None, base_url: str = None):
         """
@@ -72,7 +75,8 @@ class ClaudeAnalyzer:
         prompt = self._build_prompt(content, target_date)
         for attempt in range(2):
             try:
-                result = self._parse_result(self._request_analysis(prompt), target_date)
+                result_text = self._request_analysis(prompt, retry=attempt > 0)
+                result = self._parse_result(result_text, target_date)
                 if result["status"] == "empty" and not articles:
                     return result
                 result["categories"] = self._match_source_articles(result["categories"], articles)
@@ -90,30 +94,100 @@ class ClaudeAnalyzer:
                 reason = f"{type(error).__name__}: {error}"
                 if attempt or not retryable:
                     raise RuntimeError(f"百炼资讯分析失败：{reason}") from None
-                print(f"⚠️ 大模型首次分析失败，将重试：{reason}")
+                print(f"⚠️ 大模型首次分析失败，将重试：{reason}", flush=True)
                 if isinstance(error, requests.HTTPError):
                     sleep(2)
 
-    def _request_analysis(self, prompt: str) -> str:
-        response = requests.post(
-            f"{self.base_url.rstrip('/')}/{K2_API_ENDPOINT.lstrip('/')}",
+    def _request_analysis(self, prompt: str, *, retry: bool = False) -> str:
+        url = f"{self.base_url.rstrip('/')}/{K2_API_ENDPOINT.lstrip('/')}"
+        endpoint = urlsplit(url)
+        stream = endpoint.path.rstrip("/").endswith("/chat/completions")
+        hostname = endpoint.hostname or ""
+        is_bailian = hostname in ("dashscope.aliyuncs.com", "dashscope-intl.aliyuncs.com")
+        is_bailian = is_bailian or hostname.endswith(".maas.aliyuncs.com")
+
+        # 使用服务端默认采样参数。Kimi K3.1 Pro 默认采用最高推理强度。
+        params: dict[str, Any] = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if stream:
+            params["stream"] = True
+        if stream and is_bailian and self.model == "kimi-k3.1-pro":
+            params["reasoning_effort"] = "low" if retry else "medium"
+            # 限制思考和正文的总量，max_tokens 只限制此模型的正文。
+            params["max_completion_tokens"] = self.max_tokens
+            print(f"   百炼流式分析，推理强度：{params['reasoning_effort']}", flush=True)
+        else:
+            params["max_tokens"] = self.max_tokens
+
+        deadline = monotonic() + STREAM_TIME_LIMIT
+        with requests.post(
+            url,
             headers={"Authorization": f"Bearer {self.api_key}"},
-            json={
-                "model": self.model,
-                "max_tokens": self.max_tokens,
-                # Kimi K3 不接受自定义 temperature，使用服务端默认采样参数。
-                "messages": [{"role": "user", "content": prompt}],
-            },
+            json=params,
+            stream=stream,
             timeout=(10, 180),
-        )
+        ) as response:
+            content_type = response.headers.get("Content-Type", "").lower()
+            if response.ok and content_type.startswith("text/event-stream"):
+                print("   已连接百炼流式响应，等待模型正文...", flush=True)
+                return self._read_stream(response, deadline)
+            return self._read_json_response(response)
+
+    def _api_error_message(self, payload: Any) -> str:
+        if not isinstance(payload, dict):
+            return ""
+        detail = payload.get("error", payload)
+        message = detail.get("message", "") if isinstance(detail, dict) else ""
+        return " ".join(str(message).replace(self.api_key, "***").split())[:300]
+
+    def _read_stream(self, response: requests.Response, deadline: float) -> str:
+        """从 Chat Completions 的 SSE 响应收集最终正文。"""
+        parts = []
+        for line in response.iter_lines(chunk_size=128):
+            if monotonic() >= deadline:
+                raise requests.Timeout(f"流式分析超过 {STREAM_TIME_LIMIT} 秒")
+            if not line.startswith(b"data:"):
+                continue
+            data = line[5:].strip()
+            if not data:
+                continue
+            if data == b"[DONE]":
+                break
+            payload = json.loads(data)
+            if not isinstance(payload, dict):
+                raise ValueError("流式事件必须是 JSON 对象")
+            if payload.get("error"):
+                raise ValueError(f"百炼流式分析出错：{self._api_error_message(payload)}")
+            choices = payload.get("choices")
+            if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+                continue
+            choice = choices[0]
+            delta = choice.get("delta")
+            text = delta.get("content") if isinstance(delta, dict) else None
+            if isinstance(text, str):
+                parts.append(text)
+            finish = choice.get("finish_reason")
+            if finish == "stop":
+                break
+            if finish:
+                raise ValueError(f"模型正文未正常结束（finish_reason={finish}）")
+        else:
+            raise ValueError("百炼流式响应在正文完成前断开")
+        result = "".join(parts)
+        if not result.strip():
+            raise ValueError("API 没有返回模型正文")
+        return result
+
+    def _read_json_response(self, response: requests.Response) -> str:
+        """兼容返回普通 JSON 的接口。"""
         try:
             payload = response.json()
         except ValueError:
             payload = None
         if not response.ok:
-            detail = payload.get("error") if isinstance(payload, dict) else None
-            message = detail.get("message", "") if isinstance(detail, dict) else ""
-            message = " ".join(str(message).replace(self.api_key, "***").split())[:300]
+            message = self._api_error_message(payload)
             raise requests.HTTPError(
                 f"HTTP {response.status_code} {message}".strip(), response=response
             )

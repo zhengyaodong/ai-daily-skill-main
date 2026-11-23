@@ -47,7 +47,10 @@ class DailyNewsTest(unittest.TestCase):
         ]
         self.feed = feedparser.FeedParserDict(entries=self.entries + [self.entries[0]])
         self.fetcher = RSSFetcher()
-        self.analyzer = ClaudeAnalyzer(api_key="test-only")
+        self.analyzer = ClaudeAnalyzer(
+            api_key="test-only",
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        )
 
     @patch("src.claude_analyzer.requests.post")
     def test_all_article_links_reach_model_and_valid_analysis_is_kept(self, post):
@@ -67,7 +70,16 @@ class DailyNewsTest(unittest.TestCase):
         response = {"summary": ["大模型生成的中文核心摘要"], "categories": [
             {"key": "model", "items": model_items}
         ]}
-        post.return_value = self._completion(json.dumps(response))
+        response_text = json.dumps(response, ensure_ascii=False)
+        split = len(response_text) // 2
+        post.return_value = self._stream_response(
+            self._chunk(reasoning_content="内部推理不进入日报"),
+            self._chunk(content=response_text[:split]),
+            self._chunk(content=response_text[split:]),
+            self._chunk(finish_reason="stop"),
+            {"choices": [], "usage": {"completion_tokens": 1500}},
+            "[DONE]",
+        )
 
         content = self.fetcher.get_content_by_date(self.date, self.feed)
         result = self.analyzer.analyze(content, self.date)
@@ -75,6 +87,11 @@ class DailyNewsTest(unittest.TestCase):
         self.assertEqual(len(content["articles"]), 3)
         request_data = post.call_args.kwargs["json"]
         self.assertEqual(request_data["model"], "kimi-k3.1-pro")
+        self.assertTrue(post.call_args.kwargs["stream"])
+        self.assertTrue(request_data["stream"])
+        self.assertEqual(request_data["reasoning_effort"], "medium")
+        self.assertEqual(request_data["max_completion_tokens"], self.analyzer.max_tokens)
+        self.assertNotIn("max_tokens", request_data)
         self.assertNotIn("temperature", request_data)
         prompt = request_data["messages"][0]["content"]
         for entry in self.entries:
@@ -91,6 +108,7 @@ class DailyNewsTest(unittest.TestCase):
             self.assertIn("大模型生成的中文核心摘要", html)
             self.assertIn("模型分析的影响", html)
             self.assertIn("https://example.test/second?a=1&amp;b=2", html)
+            self.assertNotIn("内部推理不进入日报", html)
             self.assertNotIn("RSS 原始资讯", html)
 
     @staticmethod
@@ -98,6 +116,7 @@ class DailyNewsTest(unittest.TestCase):
         response = requests.Response()
         response.status_code = status_code
         response._content = json.dumps(payload).encode("utf-8")
+        response._content_consumed = True
         return response
 
     @classmethod
@@ -105,6 +124,22 @@ class DailyNewsTest(unittest.TestCase):
         return cls._api_response(200, {
             "choices": [{"finish_reason": "stop", "message": {"content": text}}],
         })
+
+    @staticmethod
+    def _stream_response(*events):
+        response = requests.Response()
+        response.status_code = 200
+        response.headers["Content-Type"] = "text/event-stream; charset=utf-8"
+        lines = [
+            "data: " + (event if isinstance(event, str) else json.dumps(event, ensure_ascii=False))
+            for event in events
+        ]
+        response.raw = io.BytesIO(("\n\n".join(lines) + "\n\n").encode("utf-8"))
+        return response
+
+    @staticmethod
+    def _chunk(*, finish_reason=None, **delta):
+        return {"choices": [{"delta": delta, "finish_reason": finish_reason}]}
 
     @staticmethod
     def _additional_entries(count, day, host):
@@ -220,19 +255,47 @@ class DailyNewsTest(unittest.TestCase):
 
     @patch("src.claude_analyzer.requests.post")
     def test_single_article_is_analyzed_after_transient_timeout(self, post):
-        post.side_effect = [requests.Timeout(), self._completion(json.dumps({
+        self.analyzer.model = "kimi-k3.1-pro"
+        interrupted = self._stream_response()
+        response_text = json.dumps({
             "summary": ["单篇资讯的核心变化"],
             "categories": [{"key": "research", "items": [
                 {"title": "研究进展", "summary": "介绍研究方法与用途", "source_id": 1}
             ]}],
-        }))]
+        })
+        resumed = self._stream_response(self._chunk(content=response_text), "[DONE]")
         feed = feedparser.FeedParserDict(entries=[self.entries[-1]])
         content = self.fetcher.get_content_by_date(self.date, feed)
-        result = self.analyzer.analyze(content, self.date)
+
+        def interrupted_lines(**kwargs):
+            yield b'data: {"choices":[{"delta":{"reasoning_content":"thinking"}}]}'
+            # Requests can surface a read timeout as ConnectionError during iter_lines().
+            raise requests.ConnectionError("Read timed out")
+
+        post.side_effect = [interrupted, resumed]
+        with patch.object(interrupted, "iter_lines", side_effect=interrupted_lines):
+            result = self.analyzer.analyze(content, self.date)
 
         self.assertEqual(result["categories"][0]["items"][0]["title"], "研究进展")
         self.assertEqual(len(result["categories"][0]["items"]), 1)
-        self.assertEqual(post.call_count, 2)
+        self.assertEqual(
+            [call.kwargs["json"]["reasoning_effort"] for call in post.call_args_list],
+            ["medium", "low"],
+        )
+        self.assertTrue(interrupted.raw.closed)
+        self.assertTrue(resumed.raw.closed)
+
+    @patch("src.claude_analyzer.requests.post")
+    def test_unfinished_stream_is_rejected(self, post):
+        for finish, error in ((None, "完成前断开"), ("length", "finish_reason=length")):
+            with self.subTest(finish=finish):
+                post.reset_mock()
+                chunk = self._chunk(content='{"status":"success"}', finish_reason=finish)
+                post.side_effect = [self._stream_response(chunk), self._stream_response(chunk)]
+                content = self.fetcher.get_content_by_date(self.date, self.feed)
+                with self.assertRaisesRegex(RuntimeError, error):
+                    self.analyzer.analyze(content, self.date)
+                self.assertEqual(post.call_count, 2)
 
 
 if __name__ == "__main__":
