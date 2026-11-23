@@ -2,6 +2,8 @@
 配置模块 - 包含所有配置信息和主题定义
 """
 import os
+from datetime import timedelta, timezone
+
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -46,10 +48,11 @@ RSS_URLS = [
     "https://rss.arxiv.org/rss/cs.AI+cs.CL",
 ]
 RSS_TIMEOUT = 30  # 秒
-DAILY_NEWS_MIN = 10
+REPORT_TIMEZONE = timezone(timedelta(hours=8))
 DAILY_NEWS_MAX = 15
 DAILY_NEWS_MAX_CANDIDATES = 36
-DAILY_NEWS_LOOKBACK_DAYS = 3  # 目标日期及之前两天
+DAILY_NEWS_LOOKBACK_DAYS = 2  # 目标日期及前一天
+DAILY_NEWS_MAX_BACKFILL = 3
 DAILY_NEWS_MAX_PREPRINTS = 4
 
 # ============================================================================

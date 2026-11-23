@@ -74,7 +74,6 @@ jobs:
           echo "Python 版本: $(python --version)"
           echo "工作目录: $(pwd)"
           echo "当前时间 (UTC): $(date -u)"
-          echo "目标日期 (前两天): $(date -u -d '2 days ago' +%Y-%m-%d)"
 
       - name: 运行 AI Daily 生成器
         env:

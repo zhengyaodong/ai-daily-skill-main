@@ -19,7 +19,6 @@ from src.config import (
     K2_API_ENDPOINT,
     CATEGORIES,
     DAILY_NEWS_MAX,
-    DAILY_NEWS_MIN,
     THEMES,
     DEFAULT_THEME
 )
@@ -234,12 +233,11 @@ class ClaudeAnalyzer:
                 f"摘要: {self._article_excerpt(article, excerpt_limit)}"
                 for index, article in enumerate(articles, 1)
             )
-            min_items = min(DAILY_NEWS_MIN, len(articles))
             max_items = min(DAILY_NEWS_MAX, len(articles))
-            count = str(min_items) if min_items == max_items else f"{min_items}–{max_items}"
             coverage = (
-                f"优先选出 {count} 条不同的 AI 资讯。合并同一事件、排除无关报道后，"
-                "若相关资讯不足，可少列。每条用 source_id 填写对应的文章编号。"
+                f"最多选 {max_items} 条不同的 AI 资讯，优先选目标日期的报道。"
+                "较早的报道仅作补充，保留有明确价值的条目。优质资讯较少时可以简报。"
+                "每条用 source_id 填写对应的文章编号。"
             )
             source_field = "source_id: 对应的文章编号（整数），同一篇文章仅选用一次"
             source_example = '"source_id": 1'
@@ -269,14 +267,15 @@ class ClaudeAnalyzer:
    - 如果内容为空或无效，返回状态为 "empty"
 
 2. **核心摘要** (summary)
-   - 生成 3-5 条今日最重要的 AI 资讯要点
+   - 优先概括目标日期的进展，最多 5 条，资讯少时可减少
    - 用中文概括最重要的变化及其影响，每条不超过 80 字
    - 按重要性排序
 
 3. **智能分类** (categories)
    {coverage}
    优先模型发布、可信研究、开源工具、AI Agent 与工程实践。优先目标日期和第一手来源。
-   合并同一事件的多篇报道，保留原始发布方或信息最完整的来源。
+   合并同一事件的多篇报道，优先采用候选中有最新实质进展的权威来源。
+   如有后续核验、更正或否认，在摘要中反映最新状态。较早发生的事件应注明事件日期。
    排除与 AI 关系不明确的报道。每条资讯单独写入一个 items 条目。
    原始资讯仅作为分析材料。根据材料说明事实和影响，不补写材料无法支持的结论。
    arXiv 条目按预印本表述，避免将其称为已发表成果。

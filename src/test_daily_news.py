@@ -168,10 +168,32 @@ class DailyNewsTest(unittest.TestCase):
         content = self.fetcher.get_digest_content(self.date, self.feed)
         articles = content["articles"]
 
-        self.assertEqual(len(articles), 16)
+        self.assertEqual(len(articles), 10)
         self.assertEqual(articles[1]["source"], "arXiv 预印本")
         self.assertEqual(sum(article["source"] == "arXiv 预印本" for article in articles), 4)
-        self.assertEqual({article["published_date"] for article in articles}, {self.date, "2026-11-21"})
+        self.assertEqual(
+            [article["published_date"] for article in articles],
+            [self.date] * 7 + ["2026-11-21"] * 3,
+        )
+
+    def test_digest_does_not_fill_with_news_two_days_before_target(self):
+        self.feed.entries.extend(self._additional_entries(30, 20, "openai.com"))
+        content = self.fetcher.get_digest_content(self.date, self.feed)
+        self.assertEqual([article["published_date"] for article in content["articles"]], [self.date] * 3)
+
+    def test_target_date_and_feed_use_beijing_midnight(self):
+        before = datetime(2026, 11, 21, 15, 59, tzinfo=timezone.utc)
+        midnight = datetime(2026, 11, 21, 16, tzinfo=timezone.utc)
+        for timestamp, expected in ((before, "2026-11-21"), (midnight, "2026-11-22")):
+            with self.subTest(timestamp=timestamp):
+                entry = feedparser.FeedParserDict(
+                    link="https://example.test/2026/11/21/article",
+                    published_parsed=timestamp.utctimetuple(),
+                )
+                self.assertEqual(self.fetcher._get_entry_date(entry), expected)
+                with patch.object(main, "datetime") as clock:
+                    clock.now.side_effect = timestamp.astimezone
+                    self.assertEqual(main.get_target_date(days_offset=0), expected)
 
     @patch("src.claude_analyzer.requests.post")
     def test_keeps_a_shorter_deduplicated_digest(self, post):

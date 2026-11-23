@@ -14,8 +14,10 @@ import requests
 from src.config import (
     DAILY_NEWS_LOOKBACK_DAYS,
     DAILY_NEWS_MAX,
+    DAILY_NEWS_MAX_BACKFILL,
     DAILY_NEWS_MAX_CANDIDATES,
     DAILY_NEWS_MAX_PREPRINTS,
+    REPORT_TIMEZONE,
     RSS_TIMEOUT,
     RSS_URL,
     RSS_URLS,
@@ -149,7 +151,7 @@ class RSSFetcher:
     def get_digest_content(
         self, target_date: str, feed: feedparser.FeedParserDict
     ) -> Optional[Dict[str, Any]]:
-        """优先选目标日期的资讯，候选不足时按日期向前补充。"""
+        """优先选目标日期的资讯，候选不足时只少量补充前一天。"""
         target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
         by_day = {
             (target_day - timedelta(days=offset)).isoformat(): {}
@@ -171,7 +173,10 @@ class RSSFetcher:
         seen_links = set()
         seen_titles = set()
         preprint_count = 0
-        for sources in by_day.values():
+        for day, sources in by_day.items():
+            limit = DAILY_NEWS_MAX_CANDIDATES
+            if day != target_date:
+                limit = min(limit, len(selected) + DAILY_NEWS_MAX_BACKFILL)
             # 同一天的来源轮流提供一条，避免高频来源占满邮件。
             entries = chain.from_iterable(zip_longest(*sources.values()))
             for entry in filter(None, entries):
@@ -186,8 +191,8 @@ class RSSFetcher:
                 selected.append(entry)
                 seen_links.add(link)
                 seen_titles.add(title)
-                if len(selected) == DAILY_NEWS_MAX_CANDIDATES:
-                    return self._merge_entries_content(selected, target_date)
+                if len(selected) >= limit:
+                    break
             if len(selected) >= DAILY_NEWS_MAX:
                 break
 
@@ -205,19 +210,17 @@ class RSSFetcher:
 
     def _get_entry_date(self, entry: feedparser.FeedParserDict) -> Optional[str]:
         """优先使用发布日期，兼容只提供链接日期或更新时间的源。"""
-        published = entry.get("published_parsed")
-        if published:
-            return datetime(*published[:6], tzinfo=timezone.utc).date().isoformat()
+        timestamp = entry.get("published_parsed")
+        if not timestamp:
+            link_date = self._extract_date_from_link(entry.get("link") or "")
+            if link_date:
+                return link_date
+            timestamp = entry.get("updated_parsed")
+        if not timestamp:
+            return None
 
-        link_date = self._extract_date_from_link(entry.get("link") or "")
-        if link_date:
-            return link_date
-
-        updated = entry.get("updated_parsed")
-        if updated:
-            return datetime(*updated[:6], tzinfo=timezone.utc).date().isoformat()
-
-        return None
+        published_at = datetime(*timestamp[:6], tzinfo=timezone.utc)
+        return published_at.astimezone(REPORT_TIMEZONE).date().isoformat()
 
     def _extract_date_from_link(self, link: str) -> Optional[str]:
         """从链接中提取日期，支持多种URL格式"""

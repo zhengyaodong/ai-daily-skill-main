@@ -5,7 +5,8 @@ AI Daily 主入口
 """
 import sys
 import os
-from datetime import datetime, timedelta, timezone
+from collections import Counter
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # 添加项目根目录到 Python 路径
@@ -16,7 +17,8 @@ from src.config import (
     ZHIPU_API_KEY,
     DAILY_NEWS_LOOKBACK_DAYS,
     OUTPUT_DIR,
-    ENABLE_IMAGE_GENERATION
+    ENABLE_IMAGE_GENERATION,
+    REPORT_TIMEZONE,
 )
 from src.rss_fetcher import RSSFetcher
 from src.claude_analyzer import ClaudeAnalyzer
@@ -51,8 +53,8 @@ def get_target_date(days_offset: int = 1) -> str:
     Returns:
         格式化的日期字符串 (YYYY-MM-DD)
     """
-    target_date = (datetime.now(timezone.utc) - timedelta(days=days_offset))
-    return target_date.strftime("%Y-%m-%d")
+    target_date = datetime.now(REPORT_TIMEZONE).date() - timedelta(days=days_offset)
+    return target_date.isoformat()
 
 
 def main():
@@ -77,7 +79,7 @@ def main():
         # 1. 计算目标日期 (今天 - 1天，即昨天)
         target_date = get_target_date(days_offset=1)
         print(f"[目标日期] {target_date}")
-        print(f"   (北京时间: {datetime.now(timezone.utc) + timedelta(hours=8)} + 8h)")
+        print(f"   (北京时间: {datetime.now(REPORT_TIMEZONE):%Y-%m-%d %H:%M:%S %z})")
         print()
 
         # 2. 下载并解析 RSS
@@ -115,6 +117,9 @@ def main():
             return
 
         print(f"   找到资讯: {content.get('title', '')[:60]}...")
+        counts = Counter(article["published_date"] for article in content["articles"])
+        distribution = "，".join(f"{day} {count} 条" for day, count in counts.items())
+        print(f"   候选日期分布: {distribution}")
         print()
 
         # 4. 分析失败时由下方错误处理退出，避免发布不完整的日报。
