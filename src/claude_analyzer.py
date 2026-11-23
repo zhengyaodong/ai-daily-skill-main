@@ -2,10 +2,12 @@
 AI 分析模块
 使用阿里百炼（通义千问 Qwen）大模型对资讯内容进行智能分析、分类和摘要
 """
-import os
 import json
+import re
+from html import unescape
+
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from src.config import (
     K2_BASE_URL,
@@ -14,6 +16,8 @@ from src.config import (
     K2_MAX_TOKENS,
     K2_API_ENDPOINT,
     CATEGORIES,
+    DAILY_NEWS_MAX,
+    DAILY_NEWS_MIN,
     THEMES,
     DEFAULT_THEME
 )
@@ -59,12 +63,14 @@ class ClaudeAnalyzer:
             - keywords: 关键词列表
             - categories: 分类资讯列表
         """
-        if not content or not content.get("content"):
+        if not content or not (content.get("articles") or content.get("content")):
             return self._empty_result(target_date, "内容为空")
 
         print(f"🤖 正在调用通义千问大模型分析内容...")
 
-        # 构建提示词
+        source_articles = content.get("articles")
+        articles = source_articles or [content]
+        min_items = min(DAILY_NEWS_MIN, len(articles))
         prompt = self._build_prompt(content, target_date)
 
         try:
@@ -72,7 +78,6 @@ class ClaudeAnalyzer:
             api_url = f"{self.base_url.rstrip('/')}{K2_API_ENDPOINT}"
             print(f"🔗 调用 API 路径: {api_url}")
             print(f"🔍 请求模型: {self.model}")
-            print(f"🔑 API Key: {self.api_key[:10]}...{self.api_key[-4:]}" if self.api_key else "🔑 API Key: 未设置")
             
             # 调用阿里百炼 API
             response = requests.post(
@@ -91,7 +96,8 @@ class ClaudeAnalyzer:
                             "content": prompt
                         }
                     ]
-                }
+                },
+                timeout=120,
             )
 
             print(f"📡 响应状态码: {response.status_code}")
@@ -141,27 +147,30 @@ class ClaudeAnalyzer:
 
             # 解析 JSON 结果
             result = self._parse_result(result_text, target_date)
+            if result["status"] == "empty" and not content.get("articles"):
+                return result
 
-            return result
+            if source_articles and all(article.get("link") for article in source_articles):
+                result["categories"] = self._match_source_articles(result["categories"], articles)
+
+            item_count = sum(len(category.get("items", [])) for category in result["categories"])
+            if result["status"] == "success" and item_count >= min_items:
+                return result
+
+            print(f"⚠️ 模型只返回 {item_count} 条有效资讯，改用 RSS 原始条目")
 
         except Exception as e:
-            print(f"❌ 百炼 API 调用失败: {e}")
-            print(f"❌ 错误类型: {type(e).__name__}")
-            import traceback
-            print(f"❌ 错误详情: {traceback.format_exc()}")
-            # 返回带有原始内容的结果，让生成器可以继续工作
-            return {
-                "status": "success",
-                "date": target_date,
-                "theme": DEFAULT_THEME,
-                "summary": [
-                    "AI 资讯分析遇到技术问题，以下是原始内容摘要",
-                    f"标题: {content.get('title', '')[:100]}..."
-                ],
-                "keywords": ["AI", "资讯"],
-                "categories": self._fallback_categories(content),
-                "raw_content": content
-            }
+            print(f"❌ 百炼资讯分析失败，改用 RSS 原始条目: {e}")
+
+        return {
+            "status": "success",
+            "date": target_date,
+            "theme": DEFAULT_THEME,
+            "summary": ["AI 资讯分析未完成，以下为 RSS 原始资讯。"],
+            "keywords": ["AI", "资讯"],
+            "categories": self._fallback_categories(articles[:DAILY_NEWS_MAX]),
+            "raw_content": content,
+        }
 
     def _build_prompt(self, content: Dict[str, Any], target_date: str) -> str:
         """构建 Claude 提示词"""
@@ -177,17 +186,34 @@ class ClaudeAnalyzer:
             for key, theme in THEMES.items()
         ])
 
+        articles = content.get("articles")
+        if articles:
+            excerpt_limit = min(600, 12000 // len(articles))
+            source_text = "\n\n".join(
+                f"文章 {index}\n标题: {article.get('title', '')}\n"
+                f"来源: {article.get('source', '')} | 日期: {article.get('published_date', '')}\n"
+                f"原文链接: {article.get('link', '')}\n"
+                f"摘要: {self._article_excerpt(article, excerpt_limit)}"
+                for index, article in enumerate(articles, 1)
+            )
+            min_items = min(DAILY_NEWS_MIN, len(articles))
+            max_items = min(DAILY_NEWS_MAX, len(articles))
+            count = str(min_items) if min_items == max_items else f"{min_items}–{max_items}"
+            coverage = f"从候选文章中选出 {count} 条不同的资讯。"
+        else:
+            source_text = (
+                f"标题: {content.get('title', '')}\n链接: {content.get('link', '')}\n\n"
+                f"完整内容:\n{content.get('content', '')[:15000]}"
+            )
+            coverage = "有多条资讯时逐条列出。"
+
         prompt = f"""你是一个专业的 AI 资讯分析师，请对以下 AI 日报内容进行深度分析。
 
 【目标日期】
 {target_date}
 
 【原始资讯内容】
-标题: {content.get('title', '')}
-链接: {content.get('link', '')}
-
-完整内容:
-{content.get('content', '')[:15000]}
+{source_text}
 
 ---
 
@@ -203,6 +229,11 @@ class ClaudeAnalyzer:
    - 按重要性排序
 
 3. **智能分类** (categories)
+   {coverage}
+   优先模型发布、可信研究、开源工具、AI Agent 与工程实践。优先目标日期和第一手来源。
+   合并同一事件的多篇报道，保留原始发布方或信息最完整的来源。
+   每条资讯单独写入一个 items 条目，原样复制对应的原文链接。
+   arXiv 条目按预印本表述，避免将其称为已发表成果。
    将资讯按以下维度分类（可空）:
 {category_desc}
 
@@ -270,7 +301,14 @@ class ClaudeAnalyzer:
       "key": "product",
       "name": "产品动态",
       "icon": "💼",
-      "items": []
+      "items": [
+        {{
+          "title": "第二条资讯标题",
+          "summary": "第二条资讯要点",
+          "url": "https://example.com/second-article",
+          "tags": ["产品"]
+        }}
+      ]
     }}
   ]
 }}
@@ -292,45 +330,14 @@ class ClaudeAnalyzer:
             result_text = result_text[:-3]
         result_text = result_text.strip()
 
-        try:
-            result = json.loads(result_text)
-
-            # 验证必要字段
-            if "status" not in result:
-                result["status"] = "success"
-            if "date" not in result:
-                result["date"] = target_date
-            if "theme" not in result:
-                result["theme"] = DEFAULT_THEME
-            if "summary" not in result:
-                result["summary"] = []
-            if "keywords" not in result:
-                result["keywords"] = []
-            if "categories" not in result:
-                result["categories"] = []
-
-            print(f"✅ 结果解析成功")
-            print(f"   主题: {result.get('theme')}")
-            print(f"   摘要数: {len(result.get('summary', []))}")
-            print(f"   关键词数: {len(result.get('keywords', []))}")
-            print(f"   分类数: {len(result.get('categories', []))}")
-
-            return result
-
-        except json.JSONDecodeError as e:
-            print(f"❌ JSON 解析失败: {e}")
-            print(f"   原始响应: {result_text[:500]}...")
-
-            # 返回一个基本的成功结果，使用原始内容
-            return {
-                "status": "success",
-                "date": target_date,
-                "theme": DEFAULT_THEME,
-                "summary": ["AI 资讯已获取"],
-                "keywords": ["AI"],
-                "categories": [],
-                "parse_error": str(e)
-            }
+        result = json.loads(result_text)
+        result.setdefault("status", "success")
+        result["date"] = target_date
+        result.setdefault("theme", DEFAULT_THEME)
+        result.setdefault("summary", [])
+        result.setdefault("keywords", [])
+        result.setdefault("categories", [])
+        return result
 
     def _empty_result(self, target_date: str, reason: str) -> Dict[str, Any]:
         """返回空结果"""
@@ -344,25 +351,57 @@ class ClaudeAnalyzer:
             "reason": reason
         }
 
-    def _fallback_categories(self, content: Dict[str, Any]) -> list:
-        """当 Claude 解析失败时的备用分类"""
-        # 简单地将原始内容作为一个通用资讯
-        title = content.get('title', '')[:100]
-        description = content.get('description', '')[:200]
-        url = content.get('link', '')
+    @staticmethod
+    def _match_source_articles(categories: list, articles: list[Dict[str, Any]]) -> list:
+        """保留有对应原文的报告条目，并使用 RSS 日期和来源。"""
+        remaining = {article["link"]: article for article in articles}
+        matched = []
+        item_count = 0
+        for category in categories:
+            items = []
+            for item in category.get("items", []):
+                if not item.get("title") or item.get("url") not in remaining:
+                    continue
+                article = remaining.pop(item["url"])
+                items.append({
+                    **item,
+                    "source": article.get("source"),
+                    "published_date": article.get("published_date"),
+                })
+                item_count += 1
+                if item_count == DAILY_NEWS_MAX:
+                    break
+            if items:
+                matched.append({**category, "items": items})
+            if item_count == DAILY_NEWS_MAX:
+                break
+        return matched
 
+    @staticmethod
+    def _article_excerpt(article: Dict[str, Any], limit: int) -> str:
+        """将 RSS 描述转换为适合提示词和日报的纯文本。"""
+        description = article.get("description") or article.get("content") or ""
+        plain_text = re.sub(r"</?(?:p|div|li|br)\b[^>]*>", " ", description, flags=re.I)
+        plain_text = unescape(re.sub(r"<[^>]+>", "", plain_text))
+        return " ".join(plain_text.split())[:limit]
+
+    def _fallback_categories(self, articles: list[Dict[str, Any]]) -> list:
+        """逐篇展示 RSS 原始条目。"""
         return [
             {
-                "key": "model",
-                "name": "模型发布",
-                "icon": "🤖",
+                "key": "rss",
+                "name": "RSS 原始资讯",
+                "icon": "📰",
                 "items": [
                     {
-                        "title": title,
-                        "summary": description,
-                        "url": url,
+                        "title": article.get("title", "")[:100] or "原文",
+                        "summary": self._article_excerpt(article, 200),
+                        "url": article.get("link", ""),
+                        "source": article.get("source"),
+                        "published_date": article.get("published_date"),
                         "tags": ["AI"]
                     }
+                    for article in articles
                 ]
             }
         ]

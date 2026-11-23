@@ -2,14 +2,24 @@
 RSS 获取与解析模块
 负责下载 RSS XML 并解析出目标日期的内容
 """
+import re
+from datetime import datetime, timedelta, timezone
+from itertools import chain, zip_longest
+from typing import Optional, Dict, List, Any
+from urllib.parse import urlsplit
+
 import feedparser
 import requests
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, List, Any
-from dateutil import parser as date_parser
-import re
 
-from src.config import RSS_URL, RSS_URLS, RSS_TIMEOUT
+from src.config import (
+    DAILY_NEWS_LOOKBACK_DAYS,
+    DAILY_NEWS_MAX,
+    DAILY_NEWS_MAX_CANDIDATES,
+    DAILY_NEWS_MAX_PREPRINTS,
+    RSS_TIMEOUT,
+    RSS_URL,
+    RSS_URLS,
+)
 
 
 class RSSFetcher:
@@ -73,9 +83,12 @@ class RSSFetcher:
                 print(f"     ❌ 解析失败: {e}")
                 failed_sources += 1
 
-        # 按发布时间排序（最新的在前）
+        # 按文章日期排序（最新的在前）
         merged_feed.entries.sort(
-            key=lambda entry: getattr(entry, 'published_parsed', (0, 0, 0)),
+            key=lambda entry: (
+                self._get_entry_date(entry) or "",
+                entry.get("published_parsed") or entry.get("updated_parsed") or (),
+            ),
             reverse=True
         )
 
@@ -113,31 +126,16 @@ class RSSFetcher:
 
         # 解析目标日期
         try:
-            target_dt = datetime.strptime(target_date, "%Y-%m-%d")
-            target_dt = target_dt.replace(tzinfo=timezone.utc)
+            target_date = datetime.strptime(target_date, "%Y-%m-%d").date().isoformat()
         except ValueError:
             raise ValueError(f"日期格式错误: {target_date}，期望格式: YYYY-MM-DD")
 
         print(f"🔍 正在查找日期: {target_date}")
 
-        # 收集目标日期的所有文章
-        matched_entries = []
-        for entry in feed.entries:
-            matched = False
-            # 方法1: 检查 pubDate
-            if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                pub_dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-                if self._is_same_day(pub_dt, target_dt):
-                    matched = True
-
-            # 方法2: 从 link 中提取日期
-            if not matched and hasattr(entry, 'link'):
-                date_from_link = self._extract_date_from_link(entry.link)
-                if date_from_link and date_from_link == target_date:
-                    matched = True
-
-            if matched:
-                matched_entries.append(entry)
+        matched_entries = [
+            entry for entry in feed.entries
+            if self._get_entry_date(entry) == target_date
+        ]
 
         if not matched_entries:
             print(f"❌ 未找到日期 {target_date} 的资讯")
@@ -148,9 +146,78 @@ class RSSFetcher:
         # 合并所有匹配的文章内容
         return self._merge_entries_content(matched_entries, target_date)
 
-    def _is_same_day(self, dt1: datetime, dt2: datetime) -> bool:
-        """判断两个日期是否是同一天"""
-        return (dt1.year, dt1.month, dt1.day) == (dt2.year, dt2.month, dt2.day)
+    def get_digest_content(
+        self, target_date: str, feed: feedparser.FeedParserDict
+    ) -> Optional[Dict[str, Any]]:
+        """优先选目标日期的资讯，候选不足时按日期向前补充。"""
+        target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
+        by_day = {
+            (target_day - timedelta(days=offset)).isoformat(): {}
+            for offset in range(DAILY_NEWS_LOOKBACK_DAYS)
+        }
+
+        for entry in feed.entries:
+            day = self._get_entry_date(entry)
+            if day not in by_day or not (entry.get("title") or "").strip():
+                continue
+            link = entry.get("link") or ""
+            if not link.startswith(("https://", "http://")):
+                continue
+            source = self._get_source(link)
+            if source:
+                by_day[day].setdefault(source, []).append(entry)
+
+        selected = []
+        seen_links = set()
+        seen_titles = set()
+        preprint_count = 0
+        for sources in by_day.values():
+            # 同一天的来源轮流提供一条，避免高频来源占满邮件。
+            entries = chain.from_iterable(zip_longest(*sources.values()))
+            for entry in filter(None, entries):
+                link = entry.link.split("#", 1)[0]
+                title = " ".join(entry.title.casefold().split())
+                if link in seen_links or title in seen_titles:
+                    continue
+                if self._get_source(link) == "arXiv 预印本":
+                    if preprint_count >= DAILY_NEWS_MAX_PREPRINTS:
+                        continue
+                    preprint_count += 1
+                selected.append(entry)
+                seen_links.add(link)
+                seen_titles.add(title)
+                if len(selected) == DAILY_NEWS_MAX_CANDIDATES:
+                    return self._merge_entries_content(selected, target_date)
+            if len(selected) >= DAILY_NEWS_MAX:
+                break
+
+        return self._merge_entries_content(selected, target_date) if selected else None
+
+    @staticmethod
+    def _get_source(link: str) -> str:
+        try:
+            host = (urlsplit(link).hostname or "").removeprefix("www.")
+        except ValueError:
+            return ""
+        if host == "arxiv.org" or host.endswith(".arxiv.org"):
+            return "arXiv 预印本"
+        return host
+
+    def _get_entry_date(self, entry: feedparser.FeedParserDict) -> Optional[str]:
+        """优先使用发布日期，兼容只提供链接日期或更新时间的源。"""
+        published = entry.get("published_parsed")
+        if published:
+            return datetime(*published[:6], tzinfo=timezone.utc).date().isoformat()
+
+        link_date = self._extract_date_from_link(entry.get("link") or "")
+        if link_date:
+            return link_date
+
+        updated = entry.get("updated_parsed")
+        if updated:
+            return datetime(*updated[:6], tzinfo=timezone.utc).date().isoformat()
+
+        return None
 
     def _extract_date_from_link(self, link: str) -> Optional[str]:
         """从链接中提取日期，支持多种URL格式"""
@@ -190,6 +257,8 @@ class RSSFetcher:
 
         # 提取链接
         content["link"] = entry.get("link", "")
+        content["source"] = self._get_source(content["link"])
+        content["published_date"] = self._get_entry_date(entry)
 
         # 提取 GUID
         content["guid"] = entry.get("id", entry.get("guid", content["link"]))
@@ -227,16 +296,26 @@ class RSSFetcher:
         Returns:
             合并后的内容字典
         """
-        if len(entries) == 1:
-            return self._extract_entry_content(entries[0])
+        articles = []
+        seen_links = set()
+        for entry in entries:
+            article = self._extract_entry_content(entry)
+            link = article["link"]
+            if link and link in seen_links:
+                continue
+            if link:
+                seen_links.add(link)
+            articles.append(article)
+
+        if len(articles) == 1:
+            return {**articles[0], "articles": articles}
 
         titles = []
         links = []
         contents = []
         pub_date = ""
 
-        for entry in entries:
-            entry_content = self._extract_entry_content(entry)
+        for entry_content in articles:
             titles.append(entry_content["title"])
             if entry_content["link"]:
                 links.append(entry_content["link"])
@@ -247,37 +326,18 @@ class RSSFetcher:
                 pub_date = entry_content["pubDate"]
 
         return {
-            "title": f"AI Daily 资讯聚合 - {target_date}（共{len(entries)}篇）",
+            "title": f"AI Daily 资讯聚合 - {target_date}（共{len(articles)}篇）",
             "link": links[0] if links else "",
             "guid": links[0] if links else "",
-            "description": f"包含 {len(entries)} 篇AI相关文章: {', '.join(titles[:5])}",
+            "description": f"包含 {len(articles)} 篇AI相关文章: {', '.join(titles[:5])}",
             "content": "\n\n".join(contents),
-            "pubDate": pub_date
+            "pubDate": pub_date,
+            "articles": articles,
         }
 
     def get_latest_date(self, feed: feedparser.FeedParserDict = None) -> Optional[str]:
         """获取最新的资讯日期"""
-        if feed is None:
-            feed = self.fetch()
-
-        if not feed.entries:
-            return None
-
-        # 获取第一条的日期
-        entry = feed.entries[0]
-
-        # 尝试从 link 中提取
-        if hasattr(entry, 'link'):
-            date_from_link = self._extract_date_from_link(entry.link)
-            if date_from_link:
-                return date_from_link
-
-        # 尝试从 pubDate 中提取
-        if hasattr(entry, 'published_parsed') and entry.published_parsed:
-            dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-            return dt.strftime("%Y-%m-%d")
-
-        return None
+        return self.get_date_range(feed)[1]
 
     def get_date_range(self, feed: feedparser.FeedParserDict = None) -> tuple:
         """
@@ -292,29 +352,9 @@ class RSSFetcher:
         if feed is None:
             feed = self.fetch()
 
-        if not feed.entries:
-            return None, None
-
-        dates = []
-        for entry in feed.entries:
-            # 方法1: 从 pubDate 中提取
-            if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-                dates.append(dt.strftime("%Y-%m-%d"))
-                continue
-
-            # 方法2: 从 link 中提取
-            if hasattr(entry, 'link'):
-                date_from_link = self._extract_date_from_link(entry.link)
-                if date_from_link:
-                    dates.append(date_from_link)
-
-        if not dates:
-            return None, None
-
-        # 去重并排序
-        unique_dates = sorted(list(set(dates)))
-        return unique_dates[0], unique_dates[-1]
+        dates = [self._get_entry_date(entry) for entry in feed.entries]
+        dates = [date for date in dates if date]
+        return (min(dates), max(dates)) if dates else (None, None)
 
 
 def fetch_rss_content(target_date: str) -> Optional[Dict[str, Any]]:

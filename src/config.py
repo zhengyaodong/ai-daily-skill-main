@@ -31,18 +31,26 @@ CLAUDE_MAX_TOKENS = K2_MAX_TOKENS
 # ============================================================================
 # 默认使用单源配置
 RSS_URL = os.getenv("RSS_URL", "https://techcrunch.com/category/artificial-intelligence/feed/")
-# 多源配置（推荐）- 稳定且丰富的AI资讯源集合
+# 厂商发布、研发工具、专业媒体与研究预印本
 RSS_URLS = [
-    "https://techcrunch.com/category/artificial-intelligence/feed/",  # TechCrunch AI专栏 - 高频更新
-    "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",  # The Verge AI - 权威科技媒体
-    "https://www.technologyreview.com/topic/artificial-intelligence/feed/",  # MIT技术评论AI - 深度分析
-    "https://www.marktechpost.com/feed/",  # MarkTechPost - AI论文和发布快速报道
-    "https://openai.com/news/rss.xml",  # OpenAI官方新闻 - 模型发布第一手
-    "https://huggingface.co/blog/feed.xml",  # Hugging Face博客 - 模型和工具生态
-    "https://hnrss.org/newest?q=ai",  # Hacker News AI主题 - 社区热门
-    "http://export.arxiv.org/rss/cs.AI",  # arXiv人工智能学术论文 - 研究前沿
+    "https://openai.com/news/rss.xml",
+    "https://deepmind.google/blog/rss.xml",
+    "https://blog.google/technology/ai/rss/",
+    "https://huggingface.co/blog/feed.xml",
+    "https://github.blog/changelog/label/copilot/feed/",
+    "https://techcrunch.com/category/artificial-intelligence/feed/",
+    "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+    "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+    "https://arstechnica.com/ai/feed/",
+    "https://latent.space/feed",
+    "https://rss.arxiv.org/rss/cs.AI+cs.CL",
 ]
 RSS_TIMEOUT = 30  # 秒
+DAILY_NEWS_MIN = 10
+DAILY_NEWS_MAX = 15
+DAILY_NEWS_MAX_CANDIDATES = 36
+DAILY_NEWS_LOOKBACK_DAYS = 3  # 目标日期及之前两天
+DAILY_NEWS_MAX_PREPRINTS = 4
 
 # ============================================================================
 # 输出配置

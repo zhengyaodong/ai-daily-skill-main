@@ -5,6 +5,7 @@ HTML 生成模块
 import os
 import json
 from datetime import datetime
+from html import escape
 from typing import Dict, Any, List
 from pathlib import Path
 
@@ -157,10 +158,16 @@ class HTMLGenerator:
 
             items_html = ""
             for item in cat_items:
-                item_title = item.get("title", "")
-                item_summary = item.get("summary", "")
-                item_url = item.get("url", "")
+                item_title = escape(item.get("title") or "")
+                item_summary = escape(item.get("summary") or "")
+                item_url = item.get("url") or ""
                 item_tags = item.get("tags", [])
+                source_details = " · ".join(filter(None, [
+                    item.get("source"), item.get("published_date"),
+                ]))
+                source_html = ""
+                if source_details:
+                    source_html = f'<p class="news-summary"><small>{escape(source_details)}</small></p>'
 
                 # 标签
                 tags_html = ""
@@ -170,8 +177,8 @@ class HTMLGenerator:
 
                 # 链接处理
                 link_html = ""
-                if item_url:
-                    link_html = f'<a href="{item_url}" class="item-link" target="_blank" rel="noopener">详情</a>'
+                if item_url.lower().startswith(("https://", "http://")):
+                    link_html = f'<a href="{escape(item_url)}" class="item-link" target="_blank" rel="noopener">详情</a>'
 
                 items_html += f"""
                 <article class="news-card">
@@ -179,6 +186,7 @@ class HTMLGenerator:
                         <h3 class="news-title">{item_title}</h3>
                         {link_html}
                     </div>
+                    {source_html}
                     <p class="news-summary">{item_summary}</p>
                     {tags_html}
                 </article>

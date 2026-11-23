@@ -14,6 +14,7 @@ sys.path.insert(0, str(project_root))
 
 from src.config import (
     ZHIPU_API_KEY,
+    DAILY_NEWS_LOOKBACK_DAYS,
     OUTPUT_DIR,
     ENABLE_IMAGE_GENERATION
 )
@@ -91,30 +92,23 @@ def main():
         print()
 
         # 3. 查找目标日期的内容
-        print(f"[步骤 2/{total_steps}] 查找目标日期的资讯...")
-        content = fetcher.get_content_by_date(target_date, rss_data)
+        print(f"[步骤 2/{total_steps}] 筛选日报候选资讯...")
+        content = fetcher.get_digest_content(target_date, rss_data)
 
         if not content:
-            print(f"目标日期 {target_date} 无内容，尝试获取 RSS 中的最新资讯...")
-            latest_date = fetcher.get_latest_date(rss_data)
-            if latest_date:
-                print(f"切换到最新可用日期: {latest_date}")
-                target_date = latest_date
-                content = fetcher.get_content_by_date(target_date, rss_data)
-
-        if not content:
-            print("   目标日期无内容，生成空页面")
+            reason = f"RSS 中未找到截至 {target_date} 的近 {DAILY_NEWS_LOOKBACK_DAYS} 日资讯。"
+            print(f"   {reason}")
             if email_enabled:
                 notifier.send_empty(
                     target_date,
-                    f"RSS 中未找到 {target_date} 的资讯内容。"
+                    f"{reason}"
                     f"RSS 可用日期范围: {date_range[0]} ~ {date_range[1]}"
                 )
 
             # 生成空页面
             generator = HTMLGenerator()
             generator.generate_css()
-            generator.generate_empty(target_date)
+            generator.generate_empty(target_date, reason)
             generator.update_index(target_date, {"summary": ["暂无资讯"]})
 
             print("   完成")
